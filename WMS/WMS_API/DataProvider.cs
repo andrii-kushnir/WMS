@@ -10,10 +10,7 @@ namespace WMS_API
 {
     public static class DataProvider
     {
-        //private const string connectionSql101 = "Context Connection = true;";
-        private const string connectionSql101 = @"Server=192.168.4.101; Database=erp; uid=КушнірА; pwd=зщшфтв;";
-        private const string connectionSql111 = @"Server=192.168.4.111; Database=WMS; uid=sa; pwd=Kwkx15Rp37;";
-        private const string connectionSql4 = @"Server=192.168.4.4; Database=Sk1; uid=WMS; pwd=Akrt1689;";
+        private const string connectionSql101 = "Context Connection = true;";
 
         public static Guid thing = new Guid("ccaa55cf-5ab6-4c67-b4f5-93dccf4e1136");
         public static Guid m2 = new Guid("ee237fa7-98af-425d-a610-d1bbcd7ba04c");
