@@ -2,12 +2,19 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace WMS_API
 {
     public static class ExtensionSQL
     {
+        public static string Ekran(this string data)
+        {
+            var result = Regex.Replace(data, @"'", @"''");
+            return result;
+        }
+
         public static string DateToSQL(this DateTime date)
         {
             var dateBegin = new DateTime(1970, 1, 1);

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+//using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -27,7 +27,7 @@ namespace WMS_API.ModelABM
         /// <summary>
         /// Серия товара, если у товара есть признак SeriesMode
         /// </summary>
-        [StringLength(150)]
+        //[StringLength(150)]
         public string Series { get; set; }
 
         /// <summary>
@@ -38,7 +38,7 @@ namespace WMS_API.ModelABM
         /// <summary>
         /// Качество
         /// </summary>
-        [StringLength(100)]
+        //[StringLength(100)]
         public string Quality { get; set; }
 
         /// <summary>

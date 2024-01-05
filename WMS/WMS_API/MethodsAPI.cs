@@ -26,7 +26,7 @@ namespace WMS_API
         public static void TestRequest()
         {
             var result = RequestData.SendPost(baseUrl + "POSTOrdersModifications", usernameAPI, passwordAPI, "", out string error);
-            //SaveError to SQL!
+            DataProvider.SaveErrorToSQL(error);
         }
 
         public static void SendClassifierPackage()
@@ -36,6 +36,7 @@ namespace WMS_API
             data.Info = DataProvider.GetClassifierPackage();
             var json = JsonConvert.SerializeObject(data, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore});
             var result = RequestData.SendPost(baseUrl + "POSTInfoRestOfGoods", usernameAPI, passwordAPI, json, out string error);
+            DataProvider.SaveErrorToSQL(error);
         }
 
         public static void SendGroups()
@@ -47,6 +48,7 @@ namespace WMS_API
                 data.Info = DataProvider.GetGroupsProducts(level);
                 var json = JsonConvert.SerializeObject(data, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
                 var result = RequestData.SendPost(baseUrl + "POSTInfoRestOfGoods", usernameAPI, passwordAPI, json, out string error);
+                DataProvider.SaveErrorToSQL(error);
             }
         }
 
@@ -57,6 +59,7 @@ namespace WMS_API
             data.Info = DataProvider.GetOneGood(codetvun);
             var json = JsonConvert.SerializeObject(data, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
             var result = RequestData.SendPost(baseUrl + "POSTInfoRestOfGoods", usernameAPI, passwordAPI, json, out string error);
+            DataProvider.SaveErrorToSQL(error);
         }
 
         public static void SendGroups(int grops)
@@ -67,6 +70,7 @@ namespace WMS_API
             SendGoodEv?.Invoke(null, new SendGoodEvEventArgs() { Count = data.Info.Products.Count});
             var json = JsonConvert.SerializeObject(data, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
             var result = RequestData.SendPost(baseUrl + "POSTInfoRestOfGoods", usernameAPI, passwordAPI, json, out string error);
+            DataProvider.SaveErrorToSQL(error);
 
             //посилання товарів з підгруп рекурсивно:
             var subgroups = DataProvider.GetSubgroups(grops);

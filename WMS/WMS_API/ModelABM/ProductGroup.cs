@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+//using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,7 +12,7 @@ namespace WMS_API.ModelABM
         /// <summary>
         /// Наименование группы товара
         /// </summary>
-        [StringLength(100)]
+        //[StringLength(100)]
         public string Description { get; set; }
 
         /// <summary>
@@ -23,7 +23,7 @@ namespace WMS_API.ModelABM
         /// <summary>
         /// Идентификатор учетной системы
         /// </summary>
-        [StringLength(100)]
+        //[StringLength(100)]
         public string CodeMS { get; set; }
 
         /// <summary>

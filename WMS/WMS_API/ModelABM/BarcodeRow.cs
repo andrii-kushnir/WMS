@@ -2,7 +2,7 @@
 using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+//using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
@@ -15,7 +15,7 @@ namespace WMS_API.ModelABM
         /// <summary>
         /// Значение штрихкода
         /// </summary>
-        [StringLength(50)]
+        //[StringLength(50)]
         public string Barcode { get; set; }
 
         /// <summary>
@@ -34,7 +34,7 @@ namespace WMS_API.ModelABM
         /// <br/>  * B1 – часть серийного номера с начала строки – для определения товара из серийного номера
         /// <br/>
         /// </summary>
-        [StringLength(2)]
+        //[StringLength(2)]
         [JsonConverter(typeof(StringEnumConverter))]
         public BarcodeType BarcodeType { get; set; }
     }

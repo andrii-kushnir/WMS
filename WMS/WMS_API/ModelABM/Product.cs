@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+//using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
@@ -20,25 +20,25 @@ namespace WMS_API.ModelABM
         /// <summary>
         /// Идентификатор учетной системы
         /// </summary>
-        [StringLength(100)]
+        //[StringLength(100)]
         public string CodeMS { get; set; }
 
         /// <summary>
         /// Наименование товара
         /// </summary>
-        [StringLength(150)]
+        //[StringLength(150)]
         public string Description { get; set; }
 
         /// <summary>
         /// Полное наименование товара (если используется)
         /// </summary>
-        [StringLength(250)]
+        //[StringLength(250)]
         public string FullDescription { get; set; }
 
         /// <summary>
         /// Дополнительное описание
         /// </summary>
-        [StringLength(250)]
+        //[StringLength(250)]
         public string AdditionalDescription { get; set; }
 
         /// <summary>
@@ -49,7 +49,7 @@ namespace WMS_API.ModelABM
         /// <summary>
         /// Артикул товара
         /// </summary>
-        [StringLength(40)]
+        //[StringLength(40)]
         public string Article { get; set; }
 
         /// <summary>
@@ -60,20 +60,20 @@ namespace WMS_API.ModelABM
         /// <summary>
         /// Бренд производителя товара
         /// </summary>
-        [StringLength(150)]
-        public string Brand { get; set; }
+        //[StringLength(150)]
+        public string Brand { get; set; } = "";
 
         /// <summary>
         /// Код категории ERP - используется для сопоставления категорий ERP-WMS
         /// </summary>
-        [StringLength(20)]
-        public string Kind { get; set; }
+        //[StringLength(20)]
+        public string Kind { get; set; } = "";
 
         /// <summary>
         /// Код подкатегории ERP - используется для сопоставления подкатегорий ERP-WMS (код не должен пересекаться с кодами категории)
         /// </summary>
-        [StringLength(20)]
-        public string Subkind { get; set; }
+        //[StringLength(20)]
+        public string Subkind { get; set; } = "";
 
         /// <summary>
         /// Тип товара:
@@ -83,34 +83,34 @@ namespace WMS_API.ModelABM
         /// <br/>  * 4 – отрезной
         /// <br/>
         /// </summary>
-        [StringLength(1)]
+        //[StringLength(1)]
         [JsonConverter(typeof(StringEnumConverter))]
         public ProductType Type { get; set; }
 
         /// <summary>
         /// Признак ведения учета по сериям
         /// </summary>
-        public bool SeriesMode { get; set; }
+        public bool SeriesMode { get; set; } = false;
 
         /// <summary>
         /// Признак ведения учета по срокам годности
         /// </summary>
-        public bool ShelfLifeMode { get; set; }
+        public bool ShelfLifeMode { get; set; } = false;
 
         /// <summary>
         /// Признак ведения учета в разрезе серийных номеров
         /// </summary>
-        public bool SeriesNumberMode { get; set; }
+        public bool SeriesNumberMode { get; set; } = false;
 
         /// <summary>
         /// Признак ведения учета в разрезе уникальных серийных номеров
         /// </summary>
-        public bool UniqueSNMode { get; set; }
+        public bool UniqueSNMode { get; set; } = false;
 
         /// <summary>
         /// Срок хранения в днях
         /// </summary>
-        [StringLength(15)]
+        //[StringLength(15)]
         public string StoragePeriodInDays { get; set; }
 
         /// <summary>
@@ -131,7 +131,7 @@ namespace WMS_API.ModelABM
         /// <summary>
         /// Признак набора
         /// </summary>
-        public bool IsSet { get; set; }
+        public bool IsSet { get; set; } = false;
 
         /// <summary>
         /// Класс оборачиваемости товара (ABC):
@@ -140,7 +140,7 @@ namespace WMS_API.ModelABM
         /// <br/>  * C
         /// <br/>
         /// </summary>
-        [StringLength(1)]
+        //[StringLength(1)]
         [JsonConverter(typeof(StringEnumConverter))]
         public ProductABCClassifier ABCClassifier { get; set; }
 
@@ -155,30 +155,46 @@ namespace WMS_API.ModelABM
         /// <br/>  * C - обычный (не используется)
         /// <br/>
         /// </summary>
-        [StringLength(1)]
+        //[StringLength(1)]
         [JsonConverter(typeof(StringEnumConverter))]
-        public ProductSerialNumberType SerialNumberType { get; set; }
+        public ProductSerialNumberType SerialNumberType { get; set; } = ProductSerialNumberType.C;
 
         /// <summary>
         /// Признак наличия фото
         /// </summary>
-        public bool HasPhoto { get; set; }
+        public bool HasPhoto { get; set; } = false;
 
         /// <summary>
         /// Материал упаковки
         /// </summary>
-        [StringLength(150)]
-        public string PackingMaterial { get; set; }
+        //[StringLength(150)]
+        public string PackingMaterial { get; set; } = "";
 
         /// <summary>
         /// Температурный режим (от)
         /// </summary>
-        public float TemperatureModeFrom { get; set; }
+        public float TemperatureModeFrom { get; set; } = 0;
 
         /// <summary>
         /// Температурный режим (до)
         /// </summary>
-        public float TemperatureModeTo { get; set; }
+        public float TemperatureModeTo { get; set; } = 0;
+
+        /// <summary>
+        /// Партія
+        /// </summary>
+        public bool Part { get; set; } = false;
+
+        /// <summary>
+        /// Калібр
+        /// </summary>
+        public bool Calibre { get; set; } = false;
+
+        /// <summary>
+        /// Тон
+        /// </summary>
+        public bool Tone { get; set; } = false;
+
     }
 
     public enum ProductType

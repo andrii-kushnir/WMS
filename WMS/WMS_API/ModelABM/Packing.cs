@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+//using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,7 +17,7 @@ namespace WMS_API.ModelABM
         /// <summary>
         /// Наименование единицы измерения
         /// </summary>
-        [StringLength(25)]
+        //[StringLength(25)]
         public string Description { get; set; }
 
         /// <summary>
@@ -68,6 +68,6 @@ namespace WMS_API.ModelABM
         /// <summary>
         /// Пометка удаления
         /// </summary>
-        public bool Deprecated { get; set; }
+        public bool Deprecated { get; set; } = false;
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+//using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,19 +17,19 @@ namespace WMS_API.ModelABM
         /// <summary>
         /// Идентификатор учетной системы
         /// </summary>
-        [StringLength(3)]
+        //[StringLength(3)]
         public string CodeClassifierPackage { get; set; }
 
         /// <summary>
         /// Наименование классификатора
         /// </summary>
-        [StringLength(25)]
+        //[StringLength(25)]
         public string Description { get; set; }
 
         /// <summary>
         /// Полное наименование классификатора
         /// </summary>
-        [StringLength(100)]
+        //[StringLength(100)]
         public string FullDescription { get; set; }
     }
 
