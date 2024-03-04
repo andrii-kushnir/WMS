@@ -13,6 +13,7 @@ namespace WMS_API
         {
             var request = (HttpWebRequest)WebRequest.Create(url);
             request.Method = "POST";
+            request.Timeout = 300000;
             string encoded = System.Convert.ToBase64String(Encoding.GetEncoding("UTF-8").GetBytes(username + ":" + password));
             request.Headers.Add("Authorization", "Basic " + encoded);
             //request.PreAuthenticate = true;

@@ -38,12 +38,23 @@ namespace WMS_UI
             this._tbNkey = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
             this._lCountGoods = new System.Windows.Forms.Label();
+            this._bSendSets = new System.Windows.Forms.Button();
+            this.button1 = new System.Windows.Forms.Button();
+            this.label3 = new System.Windows.Forms.Label();
+            this._cbServer = new System.Windows.Forms.ComboBox();
+            this._bSendGoodsPlace = new System.Windows.Forms.Button();
+            this._lCountGoods2 = new System.Windows.Forms.Label();
+            this.label5 = new System.Windows.Forms.Label();
+            this._tbPlace = new System.Windows.Forms.TextBox();
+            this._bSendRoute = new System.Windows.Forms.Button();
+            this.label4 = new System.Windows.Forms.Label();
+            this._tbRoute = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // _bSendClassifier
             // 
             this._bSendClassifier.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this._bSendClassifier.Location = new System.Drawing.Point(12, 12);
+            this._bSendClassifier.Location = new System.Drawing.Point(12, 39);
             this._bSendClassifier.Name = "_bSendClassifier";
             this._bSendClassifier.Size = new System.Drawing.Size(555, 60);
             this._bSendClassifier.TabIndex = 0;
@@ -54,7 +65,7 @@ namespace WMS_UI
             // _bSendGroups
             // 
             this._bSendGroups.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this._bSendGroups.Location = new System.Drawing.Point(12, 91);
+            this._bSendGroups.Location = new System.Drawing.Point(12, 105);
             this._bSendGroups.Name = "_bSendGroups";
             this._bSendGroups.Size = new System.Drawing.Size(555, 60);
             this._bSendGroups.TabIndex = 1;
@@ -65,7 +76,7 @@ namespace WMS_UI
             // _bSendGood
             // 
             this._bSendGood.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this._bSendGood.Location = new System.Drawing.Point(12, 170);
+            this._bSendGood.Location = new System.Drawing.Point(12, 171);
             this._bSendGood.Name = "_bSendGood";
             this._bSendGood.Size = new System.Drawing.Size(421, 60);
             this._bSendGood.TabIndex = 2;
@@ -75,7 +86,7 @@ namespace WMS_UI
             // 
             // _tbCodetvun
             // 
-            this._tbCodetvun.Location = new System.Drawing.Point(439, 192);
+            this._tbCodetvun.Location = new System.Drawing.Point(439, 193);
             this._tbCodetvun.Name = "_tbCodetvun";
             this._tbCodetvun.Size = new System.Drawing.Size(128, 20);
             this._tbCodetvun.TabIndex = 3;
@@ -83,7 +94,7 @@ namespace WMS_UI
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(475, 176);
+            this.label1.Location = new System.Drawing.Point(475, 177);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(55, 13);
             this.label1.TabIndex = 4;
@@ -92,17 +103,17 @@ namespace WMS_UI
             // _bSendGroupGoods
             // 
             this._bSendGroupGoods.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this._bSendGroupGoods.Location = new System.Drawing.Point(12, 251);
+            this._bSendGroupGoods.Location = new System.Drawing.Point(12, 237);
             this._bSendGroupGoods.Name = "_bSendGroupGoods";
             this._bSendGroupGoods.Size = new System.Drawing.Size(421, 60);
             this._bSendGroupGoods.TabIndex = 5;
-            this._bSendGroupGoods.Text = "Завантажити групу товарів(з підгрупами) - увага! операція може тривати довго";
+            this._bSendGroupGoods.Text = "Завантажити групу товарів(з підгрупами) ";
             this._bSendGroupGoods.UseVisualStyleBackColor = true;
             this._bSendGroupGoods.Click += new System.EventHandler(this._bSendGroupGoods_Click);
             // 
             // _tbNkey
             // 
-            this._tbNkey.Location = new System.Drawing.Point(439, 273);
+            this._tbNkey.Location = new System.Drawing.Point(439, 259);
             this._tbNkey.Name = "_tbNkey";
             this._tbNkey.Size = new System.Drawing.Size(128, 20);
             this._tbNkey.TabIndex = 6;
@@ -110,26 +121,142 @@ namespace WMS_UI
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(486, 257);
+            this.label2.Location = new System.Drawing.Point(472, 243);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(33, 13);
+            this.label2.Size = new System.Drawing.Size(65, 13);
             this.label2.TabIndex = 7;
-            this.label2.Text = "nkey:";
+            this.label2.Text = "nkey Групи:";
             // 
             // _lCountGoods
             // 
             this._lCountGoods.AutoSize = true;
-            this._lCountGoods.Location = new System.Drawing.Point(592, 280);
+            this._lCountGoods.Location = new System.Drawing.Point(592, 266);
             this._lCountGoods.Name = "_lCountGoods";
-            this._lCountGoods.Size = new System.Drawing.Size(35, 13);
+            this._lCountGoods.Size = new System.Drawing.Size(121, 13);
             this._lCountGoods.TabIndex = 8;
-            this._lCountGoods.Text = "label3";
+            this._lCountGoods.Text = "Процес завантаження";
+            // 
+            // _bSendSets
+            // 
+            this._bSendSets.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this._bSendSets.Location = new System.Drawing.Point(12, 369);
+            this._bSendSets.Name = "_bSendSets";
+            this._bSendSets.Size = new System.Drawing.Size(421, 60);
+            this._bSendSets.TabIndex = 9;
+            this._bSendSets.Text = "Завантажити набори";
+            this._bSendSets.UseVisualStyleBackColor = true;
+            this._bSendSets.Click += new System.EventHandler(this._bSendSets_Click);
+            // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(225, 593);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(330, 51);
+            this.button1.TabIndex = 10;
+            this.button1.Text = "button1";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(106, 15);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(47, 13);
+            this.label3.TabIndex = 11;
+            this.label3.Text = "Сервер:";
+            // 
+            // _cbServer
+            // 
+            this._cbServer.FormattingEnabled = true;
+            this._cbServer.Items.AddRange(new object[] {
+            "Головний",
+            "Тестовий"});
+            this._cbServer.Location = new System.Drawing.Point(159, 12);
+            this._cbServer.Name = "_cbServer";
+            this._cbServer.Size = new System.Drawing.Size(260, 21);
+            this._cbServer.TabIndex = 12;
+            this._cbServer.SelectedIndexChanged += new System.EventHandler(this._cbServer_SelectedIndexChanged);
+            // 
+            // _bSendGoodsPlace
+            // 
+            this._bSendGoodsPlace.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this._bSendGoodsPlace.Location = new System.Drawing.Point(12, 303);
+            this._bSendGoodsPlace.Name = "_bSendGoodsPlace";
+            this._bSendGoodsPlace.Size = new System.Drawing.Size(421, 60);
+            this._bSendGoodsPlace.TabIndex = 13;
+            this._bSendGoodsPlace.Text = "Завантажити товари за місцем зберігання";
+            this._bSendGoodsPlace.UseVisualStyleBackColor = true;
+            this._bSendGoodsPlace.Click += new System.EventHandler(this._bSendGoodsPlace_Click);
+            // 
+            // _lCountGoods2
+            // 
+            this._lCountGoods2.AutoSize = true;
+            this._lCountGoods2.Location = new System.Drawing.Point(592, 332);
+            this._lCountGoods2.Name = "_lCountGoods2";
+            this._lCountGoods2.Size = new System.Drawing.Size(121, 13);
+            this._lCountGoods2.TabIndex = 16;
+            this._lCountGoods2.Text = "Процес завантаження";
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(472, 309);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(58, 13);
+            this.label5.TabIndex = 15;
+            this.label5.Text = "код Place:";
+            // 
+            // _tbPlace
+            // 
+            this._tbPlace.Location = new System.Drawing.Point(439, 325);
+            this._tbPlace.Name = "_tbPlace";
+            this._tbPlace.Size = new System.Drawing.Size(128, 20);
+            this._tbPlace.TabIndex = 14;
+            // 
+            // _bSendRoute
+            // 
+            this._bSendRoute.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this._bSendRoute.Location = new System.Drawing.Point(12, 435);
+            this._bSendRoute.Name = "_bSendRoute";
+            this._bSendRoute.Size = new System.Drawing.Size(421, 60);
+            this._bSendRoute.TabIndex = 17;
+            this._bSendRoute.Text = "Завантажити маршрутний лист";
+            this._bSendRoute.UseVisualStyleBackColor = true;
+            this._bSendRoute.Click += new System.EventHandler(this._bSendRoute_Click);
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(475, 441);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(40, 13);
+            this.label4.TabIndex = 19;
+            this.label4.Text = "codep:";
+            // 
+            // _tbRoute
+            // 
+            this._tbRoute.Location = new System.Drawing.Point(439, 457);
+            this._tbRoute.Name = "_tbRoute";
+            this._tbRoute.Size = new System.Drawing.Size(128, 20);
+            this._tbRoute.TabIndex = 18;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.ClientSize = new System.Drawing.Size(800, 656);
+            this.Controls.Add(this.label4);
+            this.Controls.Add(this._tbRoute);
+            this.Controls.Add(this._bSendRoute);
+            this.Controls.Add(this._lCountGoods2);
+            this.Controls.Add(this.label5);
+            this.Controls.Add(this._tbPlace);
+            this.Controls.Add(this._bSendGoodsPlace);
+            this.Controls.Add(this._cbServer);
+            this.Controls.Add(this.label3);
+            this.Controls.Add(this.button1);
+            this.Controls.Add(this._bSendSets);
             this.Controls.Add(this._lCountGoods);
             this.Controls.Add(this.label2);
             this.Controls.Add(this._tbNkey);
@@ -157,6 +284,17 @@ namespace WMS_UI
         private System.Windows.Forms.TextBox _tbNkey;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label _lCountGoods;
+        private System.Windows.Forms.Button _bSendSets;
+        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.ComboBox _cbServer;
+        private System.Windows.Forms.Button _bSendGoodsPlace;
+        private System.Windows.Forms.Label _lCountGoods2;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.TextBox _tbPlace;
+        private System.Windows.Forms.Button _bSendRoute;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.TextBox _tbRoute;
     }
 }
 

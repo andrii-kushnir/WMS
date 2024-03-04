@@ -7,12 +7,12 @@ using System.Threading.Tasks;
 
 namespace WMS_API.ModelABM
 {
-    public class Packing
+    public class Packing 
     {
         /// <summary>
         /// Уникальный идентификатор единицы измерения
         /// </summary>
-        public Guid GUIDPackaging { get; set; }
+        public string GUIDPackaging { get; set; }
 
         /// <summary>
         /// Наименование единицы измерения
@@ -28,7 +28,7 @@ namespace WMS_API.ModelABM
         /// <summary>
         /// Уникальный идентификатор классификатора
         /// </summary>
-        public Guid GUIDClassifierPackage { get; set; }
+        public string GUIDClassifierPackage { get; set; }
 
         /// <summary>
         /// Коэффициент единицы измерения относительно базовой единицы

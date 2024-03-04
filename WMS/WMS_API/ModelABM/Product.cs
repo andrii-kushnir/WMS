@@ -55,7 +55,7 @@ namespace WMS_API.ModelABM
         /// <summary>
         /// Уникальный идентификатор единицы товара по умолчанию
         /// </summary>
-        public Guid GUIDPackaging { get; set; }
+        public string GUIDPackaging { get; set; }
 
         /// <summary>
         /// Бренд производителя товара
@@ -111,12 +111,12 @@ namespace WMS_API.ModelABM
         /// Срок хранения в днях
         /// </summary>
         //[StringLength(15)]
-        public string StoragePeriodInDays { get; set; }
+        public string StoragePeriodInDays { get; set; } = "0";
 
         /// <summary>
         /// Уникальный идентификатор единицы измерения товара, который используется для минимальной единицы отгрузки
         /// </summary>
-        public Guid MinShipGUIDPackaging { get; set; }
+        public string MinShipGUIDPackaging { get; set; }
 
         /// <summary>
         /// Отключает верификацию товара сканированием штрихкода на ТСД
@@ -147,7 +147,7 @@ namespace WMS_API.ModelABM
         /// <summary>
         /// Допустимый процент остатка срока годности (для прихода)
         /// </summary>
-        public float AllowableReceiptPercentageShelfLife { get; set; }
+        public float AllowableReceiptPercentageShelfLife { get; set; } = 0;
 
         /// <summary>
         /// Тип серийного номера :
@@ -200,16 +200,16 @@ namespace WMS_API.ModelABM
     public enum ProductType
     {
         [EnumMember(Value = @"1")]
-        _1 = 0,
+        _1 = 1,
 
         [EnumMember(Value = @"2")]
-        _2 = 1,
+        _2 = 2,
 
         [EnumMember(Value = @"3")]
-        _3 = 2,
+        _3 = 3,
 
         [EnumMember(Value = @"4")]
-        _4 = 3,
+        _4 = 4,
     }
 
     public enum ProductABCClassifier

@@ -21,7 +21,7 @@ namespace WMS_API.ModelABM
         /// <summary>
         /// Уникальный идентификатор единицы измерения
         /// </summary>
-        public Guid GUIDPackaging { get; set; }
+        public string GUIDPackaging { get; set; }
 
         /// <summary>
         /// Уникальный идентификатор товара

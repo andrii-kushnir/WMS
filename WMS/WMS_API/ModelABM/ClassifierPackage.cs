@@ -12,7 +12,7 @@ namespace WMS_API.ModelABM
         /// <summary>
         /// Уникальный идентификатор классификатора
         /// </summary>
-        public Guid GUIDClassifierPackage { get; set; }
+        public string GUIDClassifierPackage { get; set; }
 
         /// <summary>
         /// Идентификатор учетной системы

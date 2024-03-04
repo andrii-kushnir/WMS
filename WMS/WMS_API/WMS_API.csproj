@@ -54,11 +54,16 @@
     <Compile Include="MethodsAPI.cs" />
     <Compile Include="ModelABM\BarcodeRow.cs" />
     <Compile Include="ModelABM\ClassifierPackage.cs" />
+    <Compile Include="ModelABM\InfoOnOrder.cs" />
     <Compile Include="ModelABM\InfoRestOfGoods.cs" />
+    <Compile Include="ModelABM\OrdersModifications.cs" />
     <Compile Include="ModelABM\Packing.cs" />
+    <Compile Include="ModelABM\RestRouteSheet.cs" />
     <Compile Include="ModelABM\Product.cs" />
     <Compile Include="ModelABM\ProductGroup.cs" />
     <Compile Include="ModelABM\ProductRow.cs" />
+    <Compile Include="ModelABM\ProductSet.cs" />
+    <Compile Include="ModelABM\Response.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RequestData.cs" />
   </ItemGroup>

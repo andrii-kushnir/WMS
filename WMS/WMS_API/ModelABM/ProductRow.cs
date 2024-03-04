@@ -12,12 +12,12 @@ namespace WMS_API.ModelABM
         /// <summary>
         /// Уникальный идентификатор товара
         /// </summary>
-        public Guid GUIDProduct { get; set; }
+        public string GUIDProduct { get; set; }
 
         /// <summary>
         /// Уникальный идентификатор единицы измерения
         /// </summary>
-        public Guid GUIDPackaging { get; set; }
+        public string GUIDPackaging { get; set; }
 
         /// <summary>
         /// Количество товара
@@ -33,7 +33,7 @@ namespace WMS_API.ModelABM
         /// <summary>
         /// Срок годности товара, если у товара есть признак ShelfLifeMode
         /// </summary>
-        public DateTimeOffset ShelfLife { get; set; }
+        public DateTime ShelfLife { get; set; }
 
         /// <summary>
         /// Качество
@@ -44,7 +44,7 @@ namespace WMS_API.ModelABM
         /// <summary>
         /// Дата производства
         /// </summary>
-        public DateTimeOffset DateOfManufacture { get; set; }
+        public DateTime DateOfManufacture { get; set; }
 
         ///// <summary>
         ///// Значение дополнительного свойства партии. Ключом (тут: BP001) выступает идентификатор дополнительного свойства партии в учетной системе. Типы значений: строка, число, UUID, дата в формате ISO, булево. Может быть несколько.

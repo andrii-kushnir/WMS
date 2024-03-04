@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 namespace WMS_API.ModelABM
 {
 
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "13.20.0.0 (NJsonSchema v10.9.0.0 (Newtonsoft.Json v12.0.0.0))")]
     public class InfoRestOfGoods
     {
         /// <summary>
@@ -32,5 +31,7 @@ namespace WMS_API.ModelABM
         public List<BarcodeRow> BarcodeTable { get; set; }
 
         public List<ProductRow> TableProduct { get; set; }
+
+        public List<ProductSet> TableSetProducts { get; set; }
     }
 }
