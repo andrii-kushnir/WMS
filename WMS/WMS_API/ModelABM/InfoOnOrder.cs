@@ -110,6 +110,11 @@ namespace WMS_API.ModelABM
         public int StoragePeriodInDays { get; set; }
 
         /// <summary>
+        /// Допустимый процент остатка срока годности (для прихода)
+        /// </summary>
+        public float AllowableReceiptPercentageShelfLife { get; set; }
+
+        /// <summary>
         /// Класс оборачиваемости товара (ABC):
         /// <br/>  * A
         /// <br/>  * B
@@ -124,6 +129,21 @@ namespace WMS_API.ModelABM
         /// Количество товара на паллете
         /// </summary>
         public float QuantityOnPallet { get; set; }
+
+        /// <summary>
+        /// Партія
+        /// </summary>
+        public bool Part { get; set; }
+
+        /// <summary>
+        /// Калібр
+        /// </summary>
+        public bool Calibre { get; set; }
+
+        /// <summary>
+        /// Тон
+        /// </summary>
+        public bool Tone { get; set; }
 
         public List<Packing> Packing { get; set; }
 

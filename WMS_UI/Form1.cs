@@ -64,11 +64,6 @@ namespace WMS_UI
             this.Refresh();
         }
 
-        private void button1_Click(object sender, EventArgs e)
-        {
-            
-        }
-
         private void _cbServer_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (_cbServer.SelectedIndex == 0)
@@ -95,7 +90,13 @@ namespace WMS_UI
         private void _bSendRoute_Click(object sender, EventArgs e)
         {
             var route = Convert.ToInt32(_tbRoute.Text);
-            MethodsAPI.SendRoute(route);
+            MethodsAPI.SendRoute(route, "Місце доробити");
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            MethodsAPI.SendChangeShufr();
+            //DataProvider.SaveErrorToSQL("Це тест");
         }
     }
 }

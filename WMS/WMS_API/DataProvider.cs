@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using WMS_API.ModelABM;
 
@@ -30,26 +32,262 @@ namespace WMS_API
         public static int sh100 = 25;
         public static int box = 26;
 
-        public static void SaveErrorToSQL(string error, string param = null)
+        public static void SaveErrorToSQL(SqlConnection connection, string error, string param = null)
         {
             if (!String.IsNullOrWhiteSpace(error))
             {
                 if (!String.IsNullOrWhiteSpace(param))
                     error = param + "; " + error;
                 var methodName = new StackTrace(1).GetFrame(0).GetMethod().Name;
-                using (SqlConnection connection = new SqlConnection(connectionSql101))
-                {
-                    connection.Open();
-                    var sql = $@"INSERT INTO [erp].[dbo].[APIErrorLog] (method, error, date) VALUES ('{methodName}', '{error.Ekran()}', '{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}')";
-                    using (var query = new SqlCommand(sql, connection))
-                        query.ExecuteNonQuery();
+                var isConnection = (connection != null);
+                if (isConnection)
                     connection.Close();
+                using (SqlConnection connectionNew = new SqlConnection(connectionSql101))
+                {
+                    connectionNew.Open();
+                    var sql = $@"INSERT INTO [erp].[dbo].[APIErrorLog] (method, error, date, date_log) VALUES ('{methodName}', '{error.Ekran()}', '{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}', '{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}')";
+                    using (var query = new SqlCommand(sql, connectionNew))
+                        query.ExecuteNonQuery();
+                    connectionNew.Close();
                 }
+                if (isConnection)
+                    connection.Open();
             }
         }
 
+        //public static InfoInfoRestOfGoods GetOneGood(int codetvun)
+        //{
+        //    var result = new InfoInfoRestOfGoods()
+        //    {
+        //        GroupsProducts = new List<ProductGroup>(),
+        //        ClassifierPackage = new List<ClassifierPackage>(),
+        //        Products = new List<Product>(),
+        //        Packing = new List<Packing>(),
+        //        BarcodeTable = new List<BarcodeRow>(),
+        //        TableProduct = new List<ProductRow>()
+        //    };
+        //    using (var connection = new SqlConnection(connectionSql101))
+        //    {
+        //        Packing packing = null;
+        //        Product product = null;
+        //        int ovId = 0;
+        //        int codetv = 0;
+        //        string packingForBarcode = null;
+        //        var query = $"EXECUTE [us_GetGood] {codetvun}";
+        //        var command = new SqlCommand(query, connection);
+        //        connection.Open();
+        //        SqlDataReader reader = null;
+        //        try
+        //        {
+        //            reader = command.ExecuteReader();
+
+        //            if (reader.Read())
+        //            {
+        //                codetv = Convert.ToInt32(reader["codetv"]);
+        //                var description = new string(Convert.ToString(reader["nametv"]).Where(c => !char.IsControl(c)).ToArray());
+        //                var isToneCalibrPart = reader["isToneCalibrPart"] == System.DBNull.Value ? false : true;
+        //                product = new Product()
+        //                {
+        //                    GUIDProduct = Convert.ToInt32(reader["codetvun"]).ToString(),
+        //                    CodeMS = Convert.ToInt32(reader["codetvun"]).ToString(),
+        //                    Description = description,
+        //                    FullDescription = "",
+        //                    AdditionalDescription = "",
+        //                    ParentGUID = Convert.ToInt32(reader["nParent"]).ToString(),
+        //                    Article = codetv.ToString(),
+        //                    Type = ProductType._1,
+        //                    QuantityOnPallet = 0,
+        //                    ShelfLifeMode = reader["isShelfLifeMode"] == System.DBNull.Value ? false : true,
+        //                    Part = isToneCalibrPart,
+        //                    Calibre = isToneCalibrPart,
+        //                    Tone = isToneCalibrPart
+        //                };
+        //                result.Products.Add(product);
+
+        //                int codepl = Convert.ToInt32(reader["codepl"]);
+        //                switch (codepl)
+        //                {
+        //                    case 0:
+        //                    case 17:
+        //                    case 18:
+        //                    case 19:
+        //                    case 2:
+        //                    case 15:
+        //                    case 16:
+        //                        product.Kind = "";
+        //                        break;
+        //                    default:
+        //                        product.Kind = codepl.ToString();
+        //                        break;
+        //                }
+
+        //                packing = new Packing()
+        //                {
+        //                    GUIDProduct = product.GUIDProduct,
+        //                    Coef = 1,
+        //                    Height = Convert.ToSingle(reader["height"]),
+        //                    Width = Convert.ToSingle(reader["width"]),
+        //                    Depth = Convert.ToSingle(reader["tovlength"]),
+        //                    Weight = Convert.ToSingle(reader["vaga"]),
+        //                    Capacity = Convert.ToSingle(reader["volume"]),
+        //                    Basic = true
+        //                };
+        //                result.Packing.Add(packing);
+        //            }
+        //            else
+        //            {
+        //                SaveErrorToSQL(connection, $"Товар не знайдений, код = {codetvun}");
+        //                return result;
+        //            }
+
+        //            // ----------------- Класифікатор одиниць вимірювання -------------------
+        //            reader.NextResult();
+        //            if (reader.Read())
+        //            {
+        //                ovId = Convert.ToInt32(reader["id"]);
+        //                var pakingGuid = ExtensionSQL.PackingCode(codetvun, ovId);
+        //                product.GUIDPackaging = pakingGuid;
+        //                product.MinShipGUIDPackaging = pakingGuid;
+        //                packingForBarcode = pakingGuid;
+        //                packing.GUIDPackaging = pakingGuid;
+        //                packing.GUIDClassifierPackage = ovId.ToString("000");
+        //                packing.Description = Convert.ToString(reader["ovname"]);
+        //                product.Type = (ProductType)Convert.ToInt32(reader["type"]);
+        //            }
+        //            else
+        //            {
+        //                SaveErrorToSQL(connection, "Одиниці виміру(ov) для товару не знайдені");
+        //                return result;
+        //            }
+
+        //            if ((product.ParentGUID == "265" || product.ParentGUID == "496" || product.ParentGUID == "3009" || product.ParentGUID == "13869" || product.ParentGUID == "14057") && packing.Description == "шт")
+        //                product.Type = ProductType._4;
+
+        //            // ----------------- Термін придатності + ВГХ -------------------
+        //            reader.NextResult();
+        //            if (reader.Read())
+        //            {
+        //                var minDay = reader["TminDay"] == System.DBNull.Value ? 0 : Convert.ToInt32(reader["TminDay"]);
+        //                var maxDay = reader["TMaxDay"] == System.DBNull.Value ? 0 : Convert.ToInt32(reader["TMaxDay"]);
+
+        //                if (minDay > 1 && maxDay > 1)
+        //                {
+        //                    product.ShelfLifeMode = true;
+        //                    product.StoragePeriodInDays = maxDay.ToString();
+        //                    //product.AllowableReceiptPercentageShelfLife = 100 * (float)minDay / maxDay;
+        //                }
+
+        //                var Cbrutto = reader["Cbrutto"] == System.DBNull.Value ? 0 : Convert.ToSingle(reader["Cbrutto"]);
+        //                var Cvol = reader["Cvol"] == System.DBNull.Value ? 0 : Convert.ToSingle(reader["Cvol"]);
+        //                var Cwidt = reader["Cwidt"] == System.DBNull.Value ? 0 : Convert.ToSingle(reader["Cwidt"]);
+        //                var Cleng = reader["Cleng"] == System.DBNull.Value ? 0 : Convert.ToSingle(reader["Cleng"]);
+        //                var CHeig = reader["CHeig"] == System.DBNull.Value ? 0 : Convert.ToSingle(reader["CHeig"]);
+
+        //                if (Cvol == 1 && Cwidt == 1 && Cleng == 1 && CHeig == 1)
+        //                {
+        //                    Cvol = 0; Cwidt = 0; Cleng = 0; CHeig = 0;
+        //                }
+        //                if (packing.Height == 0 && Cleng != 0) packing.Height = Cleng;
+        //                if (packing.Width == 0 && Cwidt != 0) packing.Width = Cwidt;
+        //                if (packing.Depth == 0 && CHeig != 0) packing.Depth = CHeig;
+        //                if (packing.Capacity == 0 && Cvol != 0) packing.Capacity = Cvol;
+        //                if (packing.Weight == 0 && Cbrutto != 0) packing.Weight = Cbrutto;
+        //            }
+
+        //            // ----------------- Фасовка -------------------
+        //            reader.NextResult();
+        //            if (reader.Read())
+        //            {
+        //                var pvu = Convert.ToSingle(reader["pvu"]);
+        //                var kvu = Convert.ToInt32(reader["kvu"]);
+
+        //                var packings = FasovkaExpansion(packing, ovId, pvu, kvu, ref packingForBarcode, product);
+        //                result.Packing.AddRange(packings);
+
+        //                product.QuantityOnPallet = reader["npallet"] == System.DBNull.Value ? 0 : Convert.ToInt32(reader["npallet"]);
+        //            }
+
+        //            // ----------------- Штрих-коди -------------------
+        //            reader.NextResult();
+        //            while (reader.Read())
+        //            {
+        //                var scancode = Convert.ToString(reader["scancode"]);
+        //                if (!String.IsNullOrEmpty(scancode))
+        //                {
+        //                    var barcode = new BarcodeRow()
+        //                    {
+        //                        Barcode = scancode,
+        //                        GUIDPackaging = packingForBarcode,
+        //                        GUIDProduct = product.GUIDProduct,
+        //                        BarcodeType = BarcodeType.B0
+        //                    };
+        //                    result.BarcodeTable.Add(barcode);
+        //                }
+        //            }
+        //            var barcodeARC = new BarcodeRow()
+        //            {
+        //                Barcode = "ARC" + codetv.ToString(),
+        //                GUIDPackaging = packingForBarcode,
+        //                GUIDProduct = product.GUIDProduct,
+        //                BarcodeType = BarcodeType.B0
+        //            };
+        //            result.BarcodeTable.Add(barcodeARC);
+
+        //            // -------------------- ABC ----------------------
+        //            string ABC = "";
+        //            reader.NextResult();
+        //            if (reader.Read())
+        //            {
+        //                ABC = Convert.ToString(reader["kolABC"]);
+        //            }
+        //            switch (ABC)
+        //            {
+        //                case "A":
+        //                    product.ABCClassifier = ProductABCClassifier.A;
+        //                    break;
+        //                case "B":
+        //                    product.ABCClassifier = ProductABCClassifier.B;
+        //                    break;
+        //                default:
+        //                    product.ABCClassifier = ProductABCClassifier.C;
+        //                    break;
+        //            }
+
+        //            // ----------------- Партія -------------------
+        //            reader.NextResult();
+        //            if (reader.Read())
+        //            {
+        //                product.Part = true;
+        //            }
+
+        //            // ----------------- Калібр -------------------
+        //            reader.NextResult();
+        //            if (reader.Read())
+        //            {
+        //                product.Calibre = true;
+        //            }
+
+        //            // ----------------- Тон -------------------
+        //            reader.NextResult();
+        //            if (reader.Read())
+        //            {
+        //                product.Tone = true;
+        //            }
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            SaveErrorToSQL(connection, ex.Message, $"codetvun = {codetvun}");
+        //        }
+        //        finally
+        //        {
+        //            reader?.Close();
+        //        }
+        //    }
+        //    return result;
+        //}
+
         public static InfoInfoRestOfGoods GetOneGood(int codetvun)
-        { 
+        {
             var result = new InfoInfoRestOfGoods()
             {
                 GroupsProducts = new List<ProductGroup>(),
@@ -61,11 +299,6 @@ namespace WMS_API
             };
             using (var connection = new SqlConnection(connectionSql101))
             {
-                Packing packing = null;
-                Product product = null;
-                int ovId = 0;
-                int codetv = 0;
-                string packingForBarcode = null;
                 var query = $"EXECUTE [us_GetGood] {codetvun}";
                 var command = new SqlCommand(query, connection);
                 connection.Open();
@@ -73,200 +306,104 @@ namespace WMS_API
                 try
                 {
                     reader = command.ExecuteReader();
-
-                    if (reader.Read())
+                    if (reader.HasRows)
                     {
-                        codetv = Convert.ToInt32(reader["codetv"]);
-                        var description = new string(Convert.ToString(reader["nametv"]).Where(c => !char.IsControl(c)).ToArray());
-                        var isToneCalibrPart = reader["isToneCalibrPart"] == System.DBNull.Value ? false : true;
-                        product = new Product()
+                        while (reader.Read())
                         {
-                            GUIDProduct = Convert.ToInt32(reader["codetvun"]).ToString(),
-                            CodeMS = Convert.ToInt32(reader["codetvun"]).ToString(),
-                            Description = description,
-                            FullDescription = "",
-                            AdditionalDescription = "",
-                            ParentGUID = Convert.ToInt32(reader["nParent"]).ToString(),
-                            Article = codetv.ToString(),
-                            Type = ProductType._1,
-                            QuantityOnPallet = 0,
-                            ShelfLifeMode = reader["isShelfLifeMode"] == System.DBNull.Value ? false : true,
-                            Part = isToneCalibrPart,
-                            Calibre = isToneCalibrPart,
-                            Tone = isToneCalibrPart
-                        };
-                        result.Products.Add(product);
-
-                        int codepl = Convert.ToInt32(reader["codepl"]);
-                        switch (codepl)
-                        {
-                            case 0:
-                            case 17:
-                            case 18:
-                            case 19:
-                            case 2:
-                            case 15:
-                            case 16:
-                                product.Kind = "";
-                                break;
-                            default:
-                                product.Kind = codepl.ToString();
-                                break;
-                        }
-
-                        packing = new Packing()
-                        {
-                            GUIDProduct = product.GUIDProduct,
-                            Coef = 1,
-                            Height = Convert.ToSingle(reader["height"]),
-                            Width = Convert.ToSingle(reader["width"]),
-                            Depth = Convert.ToSingle(reader["tovlength"]),
-                            Weight = Convert.ToSingle(reader["vaga"]),
-                            Capacity = Convert.ToSingle(reader["volume"]),
-                            Basic = true
-                        };
-                        result.Packing.Add(packing);
-                    }
-                    else
-                    {
-                        SaveErrorToSQL("Товар не знайдений");
-                        return result;
-                    }
-
-                    // ----------------- Класифікатор одиниць вимірювання -------------------
-                    reader.NextResult();
-                    if (reader.Read())
-                    {
-                        ovId = Convert.ToInt32(reader["id"]);
-                        var pakingGuid = ExtensionSQL.PackingCode(codetvun, ovId);
-                        product.GUIDPackaging = pakingGuid;
-                        product.MinShipGUIDPackaging = pakingGuid;
-                        packingForBarcode = pakingGuid;
-                        packing.GUIDPackaging = pakingGuid;
-                        packing.GUIDClassifierPackage = ovId.ToString("000");
-                        packing.Description = Convert.ToString(reader["ovname"]);
-                        product.Type = (ProductType)Convert.ToInt32(reader["type"]);
-                    }
-                    else
-                    {
-                        SaveErrorToSQL("Одиниці виміру(ov) для товару не знайдені");
-                        return result;
-                    }
-
-                    // ----------------- Термін придатності + ВГХ -------------------
-                    reader.NextResult();
-                    if (reader.Read())
-                    {
-                        var minDay = reader["TminDay"] == System.DBNull.Value ? 0 : Convert.ToInt32(reader["TminDay"]);
-                        var maxDay = reader["TMaxDay"] == System.DBNull.Value ? 0 : Convert.ToInt32(reader["TMaxDay"]);
-
-                        if (minDay > 1 && maxDay > 1)
-                        {
-                            product.ShelfLifeMode = true;
-                            product.StoragePeriodInDays = maxDay.ToString();
-                            product.AllowableReceiptPercentageShelfLife = 100 * (float)minDay / maxDay;
-                        }
-
-                        var Cbrutto = reader["Cbrutto"] == System.DBNull.Value ? 0 : Convert.ToSingle(reader["Cbrutto"]);
-                        var Cvol = reader["Cvol"] == System.DBNull.Value ? 0 : Convert.ToSingle(reader["Cvol"]);
-                        var Cwidt = reader["Cwidt"] == System.DBNull.Value ? 0 : Convert.ToSingle(reader["Cwidt"]);
-                        var Cleng = reader["Cleng"] == System.DBNull.Value ? 0 : Convert.ToSingle(reader["Cleng"]);
-                        var CHeig = reader["CHeig"] == System.DBNull.Value ? 0 : Convert.ToSingle(reader["CHeig"]);
-
-                        if (Cvol == 1 && Cwidt == 1 && Cleng == 1 && CHeig == 1)
-                        {
-                            Cvol = 0; Cwidt = 0; Cleng = 0; CHeig = 0;
-                        }
-                        if (packing.Height == 0 && Cleng != 0) packing.Height = Cleng;
-                        if (packing.Width == 0 && Cwidt != 0) packing.Width = Cwidt;
-                        if (packing.Depth == 0 && CHeig != 0) packing.Depth = CHeig;
-                        if (packing.Capacity == 0 && Cvol != 0) packing.Capacity = Cvol;
-                        if (packing.Weight == 0 && Cbrutto != 0) packing.Weight = Cbrutto;
-                    }
-
-                    // ----------------- Фасовка -------------------
-                    reader.NextResult();
-                    if (reader.Read())
-                    {
-                        var pvu = Convert.ToSingle(reader["pvu"]);
-                        var kvu = Convert.ToInt32(reader["kvu"]);
-
-                        var packings = FasovkaExpansion(packing, ovId, pvu, kvu, ref packingForBarcode, product);
-                        result.Packing.AddRange(packings);
-
-                        product.QuantityOnPallet = reader["npallet"] == System.DBNull.Value ? 0 : Convert.ToInt32(reader["npallet"]);
-                    }
-
-                    // ----------------- Штрих-коди -------------------
-                    reader.NextResult();
-                    while (reader.Read())
-                    {
-                        var scancode = Convert.ToString(reader["scancode"]);
-                        if (!String.IsNullOrEmpty(scancode))
-                        {
-                            var barcode = new BarcodeRow()
+                            string packingForBarcode = null;
+                            var codetv = Convert.ToInt32(reader["codetv"]);
+                            var description = new string(Convert.ToString(reader["nametv"]).Where(c => !char.IsControl(c)).ToArray());
+                            var product = new Product()
                             {
-                                Barcode = scancode,
-                                GUIDPackaging = packingForBarcode,
-                                GUIDProduct = product.GUIDProduct,
-                                BarcodeType = BarcodeType.B0
+                                GUIDProduct = codetvun.ToString(),
+                                CodeMS = codetvun.ToString(),
+                                Description = description,
+                                FullDescription = "",
+                                AdditionalDescription = "",
+                                ParentGUID = Convert.ToInt32(reader["nParent"]).ToString(),
+                                Article = codetv.ToString(),
+                                Type = (ProductType)Convert.ToInt32(reader["typeOv"]),
+                                QuantityOnPallet = reader["npallet"] == System.DBNull.Value ? 0 : Convert.ToInt32(reader["npallet"]),
+                                ShelfLifeMode = reader["ShelfLifeMode"] == System.DBNull.Value ? false : (Convert.ToInt32(reader["ShelfLifeMode"]) == 0 ? false : true),
+                                StoragePeriodInDays = reader["StoragePeriodInDays"] == System.DBNull.Value ? "0" : Convert.ToInt32(reader["StoragePeriodInDays"]).ToString(),
+                                //AllowableReceiptPercentageShelfLife = reader["AllowableReceiptPercentageShelfLife"] == System.DBNull.Value ? 0 : Convert.ToSingle(reader["AllowableReceiptPercentageShelfLife"]),
+                                Part = reader["Part"] == System.DBNull.Value ? false : (Convert.ToInt32(reader["Part"]) == 0 ? false : true),
+                                Calibre = reader["Calibre"] == System.DBNull.Value ? false : (Convert.ToInt32(reader["Calibre"]) == 0 ? false : true),
+                                Tone = reader["Tone"] == System.DBNull.Value ? false : (Convert.ToInt32(reader["Tone"]) == 0 ? false : true),
+                                IsSet = Convert.ToInt32(reader["isSet"]) == 0 ? false : true
                             };
-                            result.BarcodeTable.Add(barcode);
-                        }
-                    }
-                    var barcodeARC = new BarcodeRow()
-                    {
-                        Barcode = "ARC" + codetv.ToString(),
-                        GUIDPackaging = packingForBarcode,
-                        GUIDProduct = product.GUIDProduct,
-                        BarcodeType = BarcodeType.B0
-                    };
-                    result.BarcodeTable.Add(barcodeARC);
+                            result.Products.Add(product);
 
-                    // -------------------- ABC ----------------------
-                    string ABC = "";
-                    reader.NextResult();
-                    if (reader.Read())
-                    {
-                        ABC = Convert.ToString(reader["kolABC"]);
-                    }
-                    switch (ABC)
-                    {
-                        case "A":
-                            product.ABCClassifier = ProductABCClassifier.A;
-                            break;
-                        case "B":
-                            product.ABCClassifier = ProductABCClassifier.B;
-                            break;
-                        default:
+                            int codepl = Convert.ToInt32(reader["codepl"]);
+                            switch (codepl)
+                            {
+                                case 0:
+                                case 2:
+                                case 15:
+                                case 16:
+                                case 17:
+                                case 18:
+                                case 19:
+                                    product.Kind = "";
+                                    break;
+                                default:
+                                    product.Kind = codepl.ToString();
+                                    break;
+                            }
+
+                            var ovId = Convert.ToInt32(reader["ovid"]);
+                            var pakingGuid = ExtensionSQL.PackingCode(codetvun, ovId);
+                            product.GUIDPackaging = pakingGuid;
+                            product.MinShipGUIDPackaging = pakingGuid;
+                            packingForBarcode = pakingGuid;
+
+                            var packing = new Packing()
+                            {
+                                GUIDPackaging = pakingGuid,
+                                Description = Convert.ToString(reader["ovname"]),
+                                GUIDProduct = product.GUIDProduct,
+                                GUIDClassifierPackage = ovId.ToString("000"),
+                                Coef = 1,
+                                Height = Convert.ToSingle(reader["height"]),
+                                Width = Convert.ToSingle(reader["width"]),
+                                Depth = Convert.ToSingle(reader["tovlength"]),
+                                Weight = Convert.ToSingle(reader["vaga"]),
+                                Capacity = Convert.ToSingle(reader["volume"]),
+                                Basic = true
+                            };
+                            result.Packing.Add(packing);
+
+                            if (reader["pvu"] != System.DBNull.Value && reader["kvu"] != System.DBNull.Value)
+                            {
+                                var pvu = Convert.ToSingle(reader["pvu"]);
+                                var kvu = Convert.ToInt32(reader["kvu"]);
+
+                                var packings = FasovkaExpansion(packing, ovId, pvu, kvu, ref packingForBarcode, product);
+                                result.Packing.AddRange(packings);
+                            }
+
                             product.ABCClassifier = ProductABCClassifier.C;
-                            break;
-                    }
-
-                    // ----------------- Партія -------------------
-                    reader.NextResult();
-                    if (reader.Read())
-                    {
-                        product.Part = true;
-                    }
-
-                    // ----------------- Калібр -------------------
-                    reader.NextResult();
-                    if (reader.Read())
-                    {
-                        product.Calibre = true;
-                    }
-
-                    // ----------------- Тон -------------------
-                    reader.NextResult();
-                    if (reader.Read())
-                    {
-                        product.Tone = true;
+                            if (reader["kolABC"] != System.DBNull.Value)
+                            {
+                                switch (Convert.ToString(reader["kolABC"]))
+                                {
+                                    case "A":
+                                        product.ABCClassifier = ProductABCClassifier.A;
+                                        break;
+                                    case "B":
+                                        product.ABCClassifier = ProductABCClassifier.B;
+                                        break;
+                                    default:
+                                        product.ABCClassifier = ProductABCClassifier.C;
+                                        break;
+                                }
+                            }
+                        }
                     }
                 }
                 catch (Exception ex)
                 {
-                    SaveErrorToSQL(ex.Message, $"codetvun = {codetvun}");
+                    SaveErrorToSQL(connection, ex.Message);
                 }
                 finally
                 {
@@ -305,7 +442,7 @@ namespace WMS_API
                 }
                 catch (Exception ex)
                 {
-                    SaveErrorToSQL(ex.Message, $"group = {group}");
+                    SaveErrorToSQL(connection, ex.Message, $"group = {group}");
                 }
                 finally
                 {
@@ -339,6 +476,7 @@ namespace WMS_API
             var listTovar = new List<int>();
             using (var connection = new SqlConnection(connectionSql101))
             {
+                //AND(ov = 'кг' OR ov = 'пог.м' OR ov = 'м2')
                 var query = $"SELECT codetvun FROM [192.168.4.4].[Sk1].[dbo].[Tovar] WHERE codepl = {place}";
                 var command = new SqlCommand(query, connection);
                 connection.Open();
@@ -354,7 +492,7 @@ namespace WMS_API
                 }
                 catch (Exception ex)
                 {
-                    SaveErrorToSQL(ex.Message, $"place = {place}");
+                    SaveErrorToSQL(connection, ex.Message, $"place = {place}");
                 }
                 finally
                 {
@@ -394,7 +532,7 @@ namespace WMS_API
                 }
                 catch (Exception ex)
                 {
-                    SaveErrorToSQL(ex.Message, $"group = {group}");
+                    SaveErrorToSQL(connection, ex.Message, $"group = {group}");
                 }
                 finally
                 {
@@ -436,7 +574,7 @@ namespace WMS_API
                 }
                 catch (Exception ex)
                 {
-                    SaveErrorToSQL(ex.Message);
+                    SaveErrorToSQL(connection, ex.Message);
                 }
                 finally
                 {
@@ -483,7 +621,7 @@ namespace WMS_API
                 }
                 catch (Exception ex)
                 {
-                    SaveErrorToSQL(ex.Message, $"level = {level}");
+                    SaveErrorToSQL(connection, ex.Message, $"level = {level}");
                 }
                 finally
                 {
@@ -534,7 +672,7 @@ namespace WMS_API
                 }
                 catch (Exception ex)
                 {
-                    SaveErrorToSQL(ex.Message);
+                    SaveErrorToSQL(connection, ex.Message);
                 }
                 finally
                 {
@@ -559,21 +697,149 @@ namespace WMS_API
             {
                 var query = $"EXECUTE [us_GetChangeGoods]";
                 var command = new SqlCommand(query, connection);
+                command.CommandTimeout = 1200;
                 connection.Open();
                 SqlDataReader reader = null;
                 try
                 {
                     reader = command.ExecuteReader();
-                    while (reader.Read())
+                    if (reader.HasRows)
                     {
-                        string packingForBarcode = null;
+                        while (reader.Read())
+                        {
+                            string packingForBarcode = null;
 
-                        var nameop = Convert.ToString(reader["nameop"]);
-                        if (nameop == "WMS")
-                            continue;
+                            var nameop = Convert.ToString(reader["nameop"]);
+                            if (nameop == "WMS")
+                                continue;
 
+                            var codetv = Convert.ToInt32(reader["codetv"]);
+                            var codetvun = Convert.ToInt32(reader["codetvun"]);
+                            var description = new string(Convert.ToString(reader["nametv"]).Where(c => !char.IsControl(c)).ToArray());
+                            var product = new Product()
+                            {
+                                GUIDProduct = codetvun.ToString(),
+                                CodeMS = codetvun.ToString(),
+                                Description = description,
+                                FullDescription = "",
+                                AdditionalDescription = "",
+                                ParentGUID = Convert.ToInt32(reader["nParent"]).ToString(),
+                                Article = codetv.ToString(),
+                                Type = (ProductType)Convert.ToInt32(reader["typeOv"]),
+                                QuantityOnPallet = reader["npallet"] == System.DBNull.Value ? 0 : Convert.ToInt32(reader["npallet"]),
+                                ShelfLifeMode = reader["ShelfLifeMode"] == System.DBNull.Value ? false : (Convert.ToInt32(reader["ShelfLifeMode"]) == 0 ? false : true),
+                                StoragePeriodInDays = reader["StoragePeriodInDays"] == System.DBNull.Value ? "0" : Convert.ToInt32(reader["StoragePeriodInDays"]).ToString(),
+                                //AllowableReceiptPercentageShelfLife = reader["AllowableReceiptPercentageShelfLife"] == System.DBNull.Value ? 0 : Convert.ToSingle(reader["AllowableReceiptPercentageShelfLife"]),
+                                Part = reader["Part"] == System.DBNull.Value ? false : (Convert.ToInt32(reader["Part"]) == 0 ? false : true),
+                                Calibre = reader["Calibre"] == System.DBNull.Value ? false : (Convert.ToInt32(reader["Calibre"]) == 0 ? false : true),
+                                Tone = reader["Tone"] == System.DBNull.Value ? false : (Convert.ToInt32(reader["Tone"]) == 0 ? false : true),
+                                IsSet = Convert.ToInt32(reader["isSet"]) == 0 ? false : true
+                            };
+                            result.Products.Add(product);
+
+                            int codepl = Convert.ToInt32(reader["codepl"]);
+                            switch (codepl)
+                            {
+                                case 0:
+                                case 17:
+                                case 18:
+                                case 19:
+                                case 2:
+                                case 15:
+                                case 16:
+                                    product.Kind = "";
+                                    break;
+                                default:
+                                    product.Kind = codepl.ToString();
+                                    break;
+                            }
+
+                            var ovId = Convert.ToInt32(reader["ovid"]);
+                            var pakingGuid = ExtensionSQL.PackingCode(codetvun, ovId);
+                            product.GUIDPackaging = pakingGuid;
+                            product.MinShipGUIDPackaging = pakingGuid;
+                            packingForBarcode = pakingGuid;
+
+                            var packing = new Packing()
+                            {
+                                GUIDPackaging = pakingGuid,
+                                Description = Convert.ToString(reader["ovname"]),
+                                GUIDProduct = product.GUIDProduct,
+                                GUIDClassifierPackage = ovId.ToString("000"),
+                                Coef = 1,
+                                Height = Convert.ToSingle(reader["height"]),
+                                Width = Convert.ToSingle(reader["width"]),
+                                Depth = Convert.ToSingle(reader["tovlength"]),
+                                Weight = Convert.ToSingle(reader["vaga"]),
+                                Capacity = Convert.ToSingle(reader["volume"]),
+                                Basic = true
+                            };
+                            result.Packing.Add(packing);
+
+                            if (reader["pvu"] != System.DBNull.Value && reader["kvu"] != System.DBNull.Value)
+                            {
+                                var pvu = Convert.ToSingle(reader["pvu"]);
+                                var kvu = Convert.ToInt32(reader["kvu"]);
+
+                                var packings = FasovkaExpansion(packing, ovId, pvu, kvu, ref packingForBarcode, product);
+                                result.Packing.AddRange(packings);
+                            }
+
+                            product.ABCClassifier = ProductABCClassifier.C;
+                            if (reader["kolABC"] != System.DBNull.Value)
+                            {
+                                switch (Convert.ToString(reader["kolABC"]))
+                                {
+                                    case "A":
+                                        product.ABCClassifier = ProductABCClassifier.A;
+                                        break;
+                                    case "B":
+                                        product.ABCClassifier = ProductABCClassifier.B;
+                                        break;
+                                    default:
+                                        product.ABCClassifier = ProductABCClassifier.C;
+                                        break;
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    SaveErrorToSQL(connection, ex.Message);
+                }
+                finally
+                {
+                    reader?.Close();
+                }
+            }
+            return result;
+        }
+
+        public static InfoInfoRestOfGoods GetNewGood(int codetvun)
+        {
+            var result = new InfoInfoRestOfGoods()
+            {
+                GroupsProducts = new List<ProductGroup>(),
+                ClassifierPackage = new List<ClassifierPackage>(),
+                Products = new List<Product>(),
+                Packing = new List<Packing>(),
+                BarcodeTable = new List<BarcodeRow>(),
+                TableProduct = new List<ProductRow>()
+            };
+            using (var connection = new SqlConnection(connectionSql101))
+            {
+                var query = $"EXECUTE [us_GetNewGoods] {codetvun}";
+                var command = new SqlCommand(query, connection);
+                connection.Open();
+                SqlDataReader reader = null;
+                try
+                {
+                    reader = command.ExecuteReader();
+                    if (reader.Read())
+                    {
                         var codetv = Convert.ToInt32(reader["codetv"]);
-                        var codetvun = Convert.ToInt32(reader["codetvun"]);
+                        codetvun = Convert.ToInt32(reader["codetvun"]);
                         var description = new string(Convert.ToString(reader["nametv"]).Where(c => !char.IsControl(c)).ToArray());
                         var product = new Product()
                         {
@@ -585,13 +851,12 @@ namespace WMS_API
                             ParentGUID = Convert.ToInt32(reader["nParent"]).ToString(),
                             Article = codetv.ToString(),
                             Type = (ProductType)Convert.ToInt32(reader["typeOv"]),
-                            QuantityOnPallet = reader["npallet"] == System.DBNull.Value ? 0 : Convert.ToInt32(reader["npallet"]),
-                            ShelfLifeMode = reader["ShelfLifeMode"] == System.DBNull.Value ? false : (Convert.ToInt32(reader["ShelfLifeMode"]) == 1 ? true : false),
-                            StoragePeriodInDays = reader["StoragePeriodInDays"] == System.DBNull.Value ? "0" : Convert.ToInt32(reader["StoragePeriodInDays"]).ToString(),
-                            AllowableReceiptPercentageShelfLife = reader["AllowableReceiptPercentageShelfLife"] == System.DBNull.Value ? 0 : Convert.ToSingle(reader["AllowableReceiptPercentageShelfLife"]),
-                            Part = reader["Part"] == System.DBNull.Value ? false : (Convert.ToInt32(reader["Part"]) == 1 ? true : false),
-                            Calibre = reader["Calibre"] == System.DBNull.Value ? false : (Convert.ToInt32(reader["Calibre"]) == 1 ? true : false),
-                            Tone = reader["Tone"] == System.DBNull.Value ? false : (Convert.ToInt32(reader["Tone"]) == 1 ? true : false)
+                            QuantityOnPallet = 0,
+                            ABCClassifier = ProductABCClassifier.C,
+                            ShelfLifeMode = reader["ShelfLifeMode"] == System.DBNull.Value ? false : (Convert.ToInt32(reader["ShelfLifeMode"]) == 0 ? false : true),
+                            Part = reader["Part"] == System.DBNull.Value ? false : (Convert.ToInt32(reader["Part"]) == 0 ? false : true),
+                            Calibre = reader["Calibre"] == System.DBNull.Value ? false : (Convert.ToInt32(reader["Calibre"]) == 0 ? false : true),
+                            Tone = reader["Tone"] == System.DBNull.Value ? false : (Convert.ToInt32(reader["Tone"]) == 0 ? false : true)
                         };
                         result.Products.Add(product);
 
@@ -616,7 +881,6 @@ namespace WMS_API
                         var pakingGuid = ExtensionSQL.PackingCode(codetvun, ovId);
                         product.GUIDPackaging = pakingGuid;
                         product.MinShipGUIDPackaging = pakingGuid;
-                        packingForBarcode = pakingGuid;
 
                         var packing = new Packing()
                         {
@@ -633,41 +897,147 @@ namespace WMS_API
                             Basic = true
                         };
                         result.Packing.Add(packing);
-
-                        if (reader["pvu"] != System.DBNull.Value && reader["kvu"] != System.DBNull.Value)
-                        {
-                            var pvu = Convert.ToSingle(reader["pvu"]);
-                            var kvu = Convert.ToInt32(reader["kvu"]);
-
-                            var packings = FasovkaExpansion(packing, ovId, pvu, kvu, ref packingForBarcode, product);
-                            result.Packing.AddRange(packings);
-                        }
-
-                        product.ABCClassifier = ProductABCClassifier.C;
-                        if (reader["kolABC"] != System.DBNull.Value)
-                        {
-                            switch (Convert.ToString(reader["kolABC"]))
-                            {
-                                case "A":
-                                    product.ABCClassifier = ProductABCClassifier.A;
-                                    break;
-                                case "B":
-                                    product.ABCClassifier = ProductABCClassifier.B;
-                                    break;
-                                default:
-                                    product.ABCClassifier = ProductABCClassifier.C;
-                                    break;
-                            }
-                        }
+                    }
+                    else
+                    {
+                        //Товар може знаходитись в прихованій групі(код 21):
+                        //SaveErrorToSQL(connection, "Товар не знайдений");
                     }
                 }
                 catch (Exception ex)
                 {
-                    SaveErrorToSQL(ex.Message);
+                    SaveErrorToSQL(connection, ex.Message);
                 }
                 finally
                 {
                     reader?.Close();
+                }
+            }
+            return result;
+        }
+
+        public static InfoInfoRestOfGoods GetOneSet(int codetvun)
+        {
+            var result = new InfoInfoRestOfGoods()
+            {
+                GroupsProducts = new List<ProductGroup>(),
+                ClassifierPackage = new List<ClassifierPackage>(),
+                Products = new List<Product>(),
+                Packing = new List<Packing>(),
+                BarcodeTable = new List<BarcodeRow>(),
+                TableProduct = new List<ProductRow>(),
+                TableSetProducts = new List<ProductSet>(),
+            };
+
+            var tovar = GetOneGood(codetvun);
+            if (tovar.Products.Count == 0)
+            {
+                SaveErrorToSQL(null, $"Товар-набір не знайдений, код = {codetvun}");
+                return null;
+            }
+            tovar.Products[0].IsSet = true;
+            result.Products.Add(tovar.Products[0]);
+
+            using (var connection = new SqlConnection(connectionSql101))
+            {
+                var query = $"EXECUTE [us_GetSet] {codetvun}";
+                var command = new SqlCommand(query, connection);
+                connection.Open();
+                SqlDataReader reader = null;
+                try
+                {
+                    reader = command.ExecuteReader();
+                    var set = new List<SetComponent>();
+                    if (reader.Read())
+                    {
+                        var main = Convert.ToInt32(reader["main"]);
+                        var mainName = Convert.ToString(reader["mainName"]);
+
+                        var productSet = new ProductSet()
+                        {
+                            SetGUID = main.ToString(),
+                            SetDescription = mainName,
+                            GoodsGUID = main.ToString(),
+                            MainProductGUID = main.ToString(),
+                            SetQty = 1,
+                            TableComponents = set
+                        };
+                        result.TableSetProducts.Add(productSet);
+                        do
+                        {
+                            var codetvunKp = Convert.ToInt32(reader["codetvunKp"]);
+                            var packingCode = ExtensionSQL.PackingCode(codetvunKp, Convert.ToInt32(reader["ovKp"]));
+
+                            set.Add(new SetComponent()
+                            {
+                                GoodsGUID = codetvunKp.ToString(),
+                                GoodsDescription = Convert.ToString(reader["komplName"]),
+                                GUIDPackaging = packingCode,
+                                Qty = Convert.ToInt32(reader["qty"])
+                            });
+                        } while (reader.Read());
+                    }
+                    else
+                    {
+                        tovar.Products[0].IsSet = false;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    SaveErrorToSQL(connection, ex.Message);
+                }
+                finally
+                {
+                    reader?.Close();
+                }
+            }
+            return result;
+        }
+
+        public static InfoInfoRestOfGoods GetChangeSets()
+        {
+            var result = new InfoInfoRestOfGoods()
+            {
+                GroupsProducts = new List<ProductGroup>(),
+                ClassifierPackage = new List<ClassifierPackage>(),
+                Products = new List<Product>(),
+                Packing = new List<Packing>(),
+                BarcodeTable = new List<BarcodeRow>(),
+                TableProduct = new List<ProductRow>(),
+                TableSetProducts = new List<ProductSet>(),
+            };
+            var listTovar = new List<int>();
+            using (var connection = new SqlConnection(connectionSql101))
+            {
+                var query = $"EXECUTE [us_GetChangeSets]";
+                var command = new SqlCommand(query, connection);
+                connection.Open();
+                SqlDataReader reader = null;
+                try
+                {
+                    reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        var code = Convert.ToInt32(reader["codetvun"]);
+                        listTovar.Add(code);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    SaveErrorToSQL(connection, ex.Message);
+                }
+                finally
+                {
+                    reader?.Close();
+                }
+            }
+            foreach (var codetvun in listTovar)
+            {
+                var tovar = GetOneSet(codetvun);
+                if (tovar != null)
+                {
+                    result.Products.AddRange(tovar.Products);
+                    result.TableSetProducts.AddRange(tovar.TableSetProducts);
                 }
             }
             return result;
@@ -715,12 +1085,13 @@ namespace WMS_API
                             Article = codetv.ToString(),
                             Type = (ProductType)Convert.ToInt32(reader["typeOv"]),
                             QuantityOnPallet = reader["npallet"] == System.DBNull.Value ? 0 : Convert.ToInt32(reader["npallet"]),
-                            ShelfLifeMode = reader["ShelfLifeMode"] == System.DBNull.Value ? false : (Convert.ToInt32(reader["ShelfLifeMode"]) == 1 ? true : false),
+                            ShelfLifeMode = reader["ShelfLifeMode"] == System.DBNull.Value ? false : (Convert.ToInt32(reader["ShelfLifeMode"]) == 0 ? false : true),
                             StoragePeriodInDays = reader["StoragePeriodInDays"] == System.DBNull.Value ? "0" : Convert.ToInt32(reader["StoragePeriodInDays"]).ToString(),
-                            AllowableReceiptPercentageShelfLife = reader["AllowableReceiptPercentageShelfLife"] == System.DBNull.Value ? 0 : Convert.ToSingle(reader["AllowableReceiptPercentageShelfLife"]),
-                            Part = reader["Part"] == System.DBNull.Value ? false : (Convert.ToInt32(reader["Part"]) == 1 ? true : false),
-                            Calibre = reader["Calibre"] == System.DBNull.Value ? false : (Convert.ToInt32(reader["Calibre"]) == 1 ? true : false),
-                            Tone = reader["Tone"] == System.DBNull.Value ? false : (Convert.ToInt32(reader["Tone"]) == 1 ? true : false)
+                            //AllowableReceiptPercentageShelfLife = reader["AllowableReceiptPercentageShelfLife"] == System.DBNull.Value ? 0 : Convert.ToSingle(reader["AllowableReceiptPercentageShelfLife"]),
+                            Part = reader["Part"] == System.DBNull.Value ? false : (Convert.ToInt32(reader["Part"]) == 0 ? false : true),
+                            Calibre = reader["Calibre"] == System.DBNull.Value ? false : (Convert.ToInt32(reader["Calibre"]) == 0 ? false : true),
+                            Tone = reader["Tone"] == System.DBNull.Value ? false : (Convert.ToInt32(reader["Tone"]) == 0 ? false : true),
+                            IsSet = Convert.ToInt32(reader["isSet"]) == 0 ? false : true
                         };
                         result.Products.Add(product);
 
@@ -792,7 +1163,7 @@ namespace WMS_API
                 }
                 catch (Exception ex)
                 {
-                    SaveErrorToSQL(ex.Message);
+                    SaveErrorToSQL(connection, ex.Message);
                 }
                 finally
                 {
@@ -833,7 +1204,7 @@ namespace WMS_API
                             var kvu = reader["kvu"] == System.DBNull.Value ? 0 : Convert.ToInt32(reader["kvu"]);
 
                             string packingForBarcode;
-                            if (ovId == m2 && pvu != kvu && pvu != 0 && kvu != 0) // це тип плитка
+                            if (ovId == m2 && pvu != 0 && kvu != 0) // це тип плитка
                                 packingForBarcode = ExtensionSQL.PackingCode(codetvun, thing);
                             else
                                 packingForBarcode = ExtensionSQL.PackingCode(codetvun, ovId);
@@ -846,12 +1217,22 @@ namespace WMS_API
                                 BarcodeType = BarcodeType.B0
                             };
                             result.BarcodeTable.Add(barcode);
+
+                            var codetv = Convert.ToInt32(reader["codetv"]);
+                            var barcodeARC = new BarcodeRow()
+                            {
+                                Barcode = "ARC" + codetv.ToString(),
+                                GUIDPackaging = packingForBarcode,
+                                GUIDProduct = codetvun.ToString(),
+                                BarcodeType = BarcodeType.B0
+                            };
+                            result.BarcodeTable.Add(barcodeARC);
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    SaveErrorToSQL(ex.Message);
+                    SaveErrorToSQL(connection, ex.Message);
                 }
                 finally
                 {
@@ -867,7 +1248,7 @@ namespace WMS_API
 
             var codetvun = packing.GUIDProduct;
 
-            if (ov == m2 && pvu != kvu && pvu != 0 && kvu != 0) // це тип плитка
+            if (ov == m2 && pvu != 0 && kvu != 0) // це тип плитка
             {
                 float coef = ((float)kvu) / pvu;
                 var packingBase = new Packing()
@@ -981,7 +1362,7 @@ namespace WMS_API
                                 SetGUID = mainOld.ToString(),
                                 SetDescription = mainNameOld,
                                 GoodsGUID = mainOld.ToString(),
-                                MainProductGUID = "",
+                                MainProductGUID = mainOld.ToString(),
                                 SetQty = 1,
                                 TableComponents = set
                             };
@@ -995,13 +1376,25 @@ namespace WMS_API
                         if (reader["kompl"] == System.DBNull.Value || reader["ov"] == System.DBNull.Value)
                             continue;
 
+                        var componentGUID = Convert.ToInt32(reader["kompl"]).ToString();
+                        var packingCode = ExtensionSQL.PackingCode(Convert.ToInt32(reader["kompl"]), Convert.ToInt32(reader["ov"]));
+
                         set.Add(new SetComponent()
                         {
-                            GoodsGUID = Convert.ToInt32(reader["kompl"]).ToString(),
+                            GoodsGUID = componentGUID,
                             GoodsDescription = Convert.ToString(reader["komplName"]),
-                            GUIDPackaging = ExtensionSQL.PackingCode(Convert.ToInt32(reader["kompl"]), Convert.ToInt32(reader["ov"])),
-                            Qty = 1
+                            GUIDPackaging = packingCode,
+                            Qty = reader["countInSet"] == System.DBNull.Value ? 1 : Convert.ToInt32(reader["countInSet"])
                         });
+
+                        var barcode = new BarcodeRow()
+                        {
+                            Barcode = "ARC" + Convert.ToInt32(reader["codetvOld"]).ToString(),
+                            GUIDPackaging = packingCode,
+                            GUIDProduct = componentGUID,
+                            BarcodeType = BarcodeType.B0
+                        };
+                        result.BarcodeTable.Add(barcode);
                     }
                     tovar = GetOneGood(mainOld);
                     tovar.Products[0].IsSet = true;
@@ -1012,7 +1405,7 @@ namespace WMS_API
                         SetGUID = mainOld.ToString(),
                         SetDescription = mainNameOld,
                         GoodsGUID = mainOld.ToString(),
-                        MainProductGUID = "",
+                        MainProductGUID = mainOld.ToString(),
                         SetQty = 1,
                         TableComponents = set
                     };
@@ -1020,7 +1413,7 @@ namespace WMS_API
                 }
                 catch (Exception ex)
                 {
-                    SaveErrorToSQL(ex.Message);
+                    SaveErrorToSQL(connection, ex.Message);
                 }
                 finally
                 {
@@ -1032,38 +1425,90 @@ namespace WMS_API
 
         public static void AddModificationsToBD(ProductOnOrder product)
         {
+            var culture = Thread.CurrentThread.CurrentCulture;
+            Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("en-US");
             using (var connection = new SqlConnection(connectionSql101))
             {
+                connection.Open();
                 Packing basePacking;
-                if (product.Packing.Count == 1)
-                    basePacking = product.Packing[0];
-                else
+                try
                 {
-                    //Цей варіант обробити!!! Потрібно витягнути одиницю виміру з ERP і взяти з WMS саме цю одиницю виміру:
-                    basePacking = product.Packing.FirstOrDefault(p => p.Basic);
-                }
-                var query = $"INSERT INTO TmpModifications (codetvun, height, width, tovlength, vaga, volume, QuantityOnPallet) VALUES ({product.GUIDProduct}, {basePacking.Height}, {basePacking.Width}, {basePacking.Depth}, {basePacking.Weight}, {basePacking.Capacity}, {basePacking.Weight}, {product.QuantityOnPallet}, )";
-#warning ДОРОБИТИ ТОНИ/КАЛІБРИ
-                //DO query
-
-                foreach (var barcode in product.BarcodeTable)
-                {
-                    if (barcode.Barcode.IndexOf("ARC") != 0)
+                    if (product.Packing.Count == 1)
+                        basePacking = product.Packing[0];
+                    else
                     {
-                        query = $"INSERT INTO TmpModificationsShufr (codetvun, shufr) VALUES ({product.GUIDProduct}, '{barcode.Barcode}')";
-                        //DO query
+                        //Тип плитка і інші з декількома пакуваннями:
+                        //Беру базову одиницю виміру, тобто шт. для плитки:
+                        basePacking = product.Packing.FirstOrDefault(p => p.Basic);
+                    }
+                    Int32.TryParse(product.Kind, out int kind);
+                    var sql = $"INSERT INTO TmpModifications (codetvun, height, width, tovlength, vaga, volume, QuantityOnPallet, ShelfLifeMode, StoragePeriodInDays, AllowableReceiptPercentageShelfLife, Part, Calibre, Tone, codepl) VALUES ({product.GUIDProduct}, {basePacking.Height}, {basePacking.Width}, {basePacking.Depth}, {basePacking.Weight}, {basePacking.Capacity}, {product.QuantityOnPallet}, {(product.ShelfLifeMode ? 1 : 0)}, {product.StoragePeriodInDays}, {product.AllowableReceiptPercentageShelfLife}, {(product.Part ? 1 : 0)}, {(product.Calibre ? 1 : 0)}, {(product.Tone ? 1 : 0)}, {kind})";
+                    using (var query = new SqlCommand(sql, connection))
+                        query.ExecuteNonQuery();
+
+                    foreach (var barcode in product.BarcodeTable)
+                    {
+                        if (barcode.Barcode.IndexOf("ARC") != 0 && barcode.Barcode.Length <= 20)
+                        {
+                            sql = $"INSERT INTO TmpModificationsShufr (codetvun, scancode) VALUES ({product.GUIDProduct}, '{barcode.Barcode}')";
+                            using (var query = new SqlCommand(sql, connection))
+                                query.ExecuteNonQuery();
+                        }
                     }
                 }
+                catch (Exception ex)
+                {
+                    SaveErrorToSQL(connection, ex.Message, $"level = {product.GUIDProduct}");
+                }
+                connection.Close();
             }
+            Thread.CurrentThread.CurrentCulture = culture;
         }
 
-        public static InfoRouteSheet GetRoute(int route)
+        public static void AddRemainsToBD(List<Remain> remains)
+        {
+            var culture = Thread.CurrentThread.CurrentCulture;
+            Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("en-US");
+
+            var remainsAll = remains
+                .GroupBy(r => r.GUIDProduct)
+                .Select(grp => new {Codetvun = Convert.ToInt32(grp.Key), QtyСondition = grp.Where(q => q.Quality != "Брак").Sum(q => q.Qty), QtyDefect = grp.Where(q => q.Quality == "Брак").Sum(q => q.Qty) })
+                .ToList();
+
+            using (var connection = new SqlConnection(connectionSql101))
+            {
+                connection.Open();
+                using (var transaction = connection.BeginTransaction())
+                {
+                    var command = connection.CreateCommand();
+                    command.Transaction = transaction;
+                    command.CommandText = "INSERT INTO TmpRemains (codetvun, QtyСondition, QtyDefect) VALUES (@codetvun, @QtyСondition, @QtyDefect)";
+                    command.Parameters.Add("@codetvun", System.Data.SqlDbType.Int);
+                    command.Parameters.Add("@QtyСondition", System.Data.SqlDbType.Decimal);
+                    command.Parameters.Add("@QtyDefect", System.Data.SqlDbType.Decimal);
+
+                    foreach (var remain in remainsAll)
+                    {
+                        command.Parameters["@codetvun"].Value = remain.Codetvun;
+                        command.Parameters["@QtyСondition"].Value = remain.QtyСondition;
+                        command.Parameters["@QtyDefect"].Value = remain.QtyDefect;
+                        command.ExecuteNonQuery();
+                    }
+
+                    transaction.Commit();
+                }
+                connection.Close();
+            }
+            Thread.CurrentThread.CurrentCulture = culture;
+        }
+
+        public static InfoRouteSheet GetRoute(int route, string place)
         {
             var result = new InfoRouteSheet();
 
             using (var connection = new SqlConnection(connectionSql101))
             {
-                var query = $"EXECUTE [us_GetRouteSheet] {route}";
+                var query = $"EXECUTE [us_GetRouteSheet] {route}, '{place}'";
                 var command = new SqlCommand(query, connection);
                 connection.Open();
                 SqlDataReader reader = null;
@@ -1094,13 +1539,14 @@ namespace WMS_API
                     }
                     else
                     {
-                        SaveErrorToSQL("Маршрутний лист не знайдений");
-                        return result;
+#warning Забрати коментар коли будуть запущені усі товари:
+                        //SaveErrorToSQL("Маршрутний лист не знайдений");
+                        return null;
                     }
                 }
                 catch (Exception ex)
                 {
-                    SaveErrorToSQL(ex.Message);
+                    SaveErrorToSQL(connection, ex.Message);
                 }
                 finally
                 {
@@ -1126,30 +1572,12 @@ namespace WMS_API
         {
             using (var connection = new SqlConnection(connectionSql4))
             {
-                var query = $"SELECT COUNT(*) FROM [Tovar].[dbo].[Tovar] where codepl = " + place.ToString() + "";
+                var query = $"SELECT COUNT(*) FROM [Tovar].[dbo].[Tovar] where codepl = {place}";
                 var command = new SqlCommand(query, connection);
                 connection.Open();
                 var reader = command.ExecuteScalar();
                 return (int)reader;
             }
         }
-
-
-        //public void SaveClientSQL(UserViber user)
-        //{
-
-        //    dateCreate = reader["dateCreate"] == System.DBNull.Value? new DateTime(2000, 1, 1) : Convert.ToDateTime(reader["dateCreate"]),
-        //    inviteType = (InviteType) Convert.ToInt32(reader["inviteType"]),
-        //    subscribed = Convert.ToBoolean(reader["subscribed"]),
-        //    buhnetName = reader["namep"] == System.DBNull.Value? null : Convert.ToString(reader["namep"]),
-
-
-        //    var name = Regex.Replace(user.Name, @"'", @"''");
-        //    var query = $"INSERT INTO [dbo].[ArseniumViberClients] ([guid], [phone], [dateCreate], [viberId], [viberName], [inviteType], [subscribed], [avatar], [language], [country], [os], [device]) VALUES ('{user.Id}', '{user.phone}', '{DateTime.Now:yyyy-MM-dd HH:mm:ss}', '{user.idViber}', '{name}', {(int)user.inviteType}, {(user.subscribed ? 1 : 0)}, '{user.Avatar}', '{user.language ?? ""}', '{user.country ?? ""}', '{user.primary_device_os ?? ""}', '{user.device_type ?? ""}')";
-        //    Enqueue100(query);
-        //}
-
-
-
     }
 }

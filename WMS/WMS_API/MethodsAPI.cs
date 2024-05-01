@@ -12,8 +12,8 @@ namespace WMS_API
     {
         private const string baseUrlMain = "http://192.168.4.101/wms_arc_ceramics/hs/WMSExchange/";
         private const string baseUrlTest = "http://192.168.4.101/wms_arc_ceramics_test/hs/WMSExchange/";
-        private const string usernameAPI = "Будзяк Тарас";
-        private const string passwordAPI = "123";
+        private const string usernameAPI = "Exchange";
+        private const string passwordAPI = "Exchange";
 
         public const string wareHouseCode = "000000001";
 
@@ -41,8 +41,8 @@ namespace WMS_API
         public static void TestRequest()
         {
             var result = RequestData.SendPost(baseUrl + "POSTOrdersModifications", usernameAPI, passwordAPI, "", out string error);
-            DataProvider.SaveErrorToSQL(error);
-            DataProvider.SaveErrorToSQL(result.CheckOnError());
+            DataProvider.SaveErrorToSQL(null, error);
+            DataProvider.SaveErrorToSQL(null, result.CheckOnError());
         }
 
         public static void SendClassifierPackage()
@@ -52,8 +52,8 @@ namespace WMS_API
             data.Info = DataProvider.GetClassifierPackage();
             var json = JsonConvert.SerializeObject(data, Formatting.Indented, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore});
             var result = RequestData.SendPost(baseUrl + "POSTInfoRestOfGoods", usernameAPI, passwordAPI, json, out string error);
-            DataProvider.SaveErrorToSQL(error);
-            DataProvider.SaveErrorToSQL(result.CheckOnError());
+            DataProvider.SaveErrorToSQL(null, error);
+            DataProvider.SaveErrorToSQL(null, result.CheckOnError());
         }
 
         public static void SendGroups()
@@ -65,8 +65,8 @@ namespace WMS_API
                 data.Info = DataProvider.GetGroupsProducts(level);
                 var json = JsonConvert.SerializeObject(data, Formatting.Indented, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
                 var result = RequestData.SendPost(baseUrl + "POSTInfoRestOfGoods", usernameAPI, passwordAPI, json, out string error);
-                DataProvider.SaveErrorToSQL(error, $"level = {level}");
-                DataProvider.SaveErrorToSQL(result.CheckOnError());
+                DataProvider.SaveErrorToSQL(null, error, $"level = {level}");
+                DataProvider.SaveErrorToSQL(null, result.CheckOnError());
             }
         }
 
@@ -79,8 +79,8 @@ namespace WMS_API
             {
                 var json = JsonConvert.SerializeObject(data, Formatting.Indented, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
                 var result = RequestData.SendPost(baseUrl + "POSTInfoRestOfGoods", usernameAPI, passwordAPI, json, out string error);
-                DataProvider.SaveErrorToSQL(error);
-                DataProvider.SaveErrorToSQL(result.CheckOnError());
+                DataProvider.SaveErrorToSQL(null, error);
+                DataProvider.SaveErrorToSQL(null, result.CheckOnError());
             }
         }
 
@@ -91,10 +91,58 @@ namespace WMS_API
             data.Info = DataProvider.GetChangeGoods();
             if (data.Info.GroupsProducts.Count != 0 || data.Info.ClassifierPackage.Count != 0 || data.Info.Products.Count != 0 || data.Info.Packing.Count != 0 || data.Info.BarcodeTable.Count != 0 || data.Info.TableProduct.Count != 0)
             {
-                var json = JsonConvert.SerializeObject(data, Formatting.Indented, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
-                var result = RequestData.SendPost(baseUrl + "POSTInfoRestOfGoods", usernameAPI, passwordAPI, json, out string error);
-                DataProvider.SaveErrorToSQL(error);
-                DataProvider.SaveErrorToSQL(result.CheckOnError());
+                if (data.Info.Products.Count <= 10000)
+                {
+                    var json = JsonConvert.SerializeObject(data, Formatting.Indented, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
+                    var result = RequestData.SendPost(baseUrl + "POSTInfoRestOfGoods", usernameAPI, passwordAPI, json, out string error);
+                    DataProvider.SaveErrorToSQL(null, error);
+                    DataProvider.SaveErrorToSQL(null, result.CheckOnError());
+                }
+                else
+                {
+                    var i = 0;
+                    while (i < data.Info.Products.Count)
+                    {
+                        var dataPart = new InfoRestOfGoods() { WareHouseCode = wareHouseCode};
+                        dataPart.Info = new InfoInfoRestOfGoods()
+                        {
+                            GroupsProducts = new List<ProductGroup>(),
+                            ClassifierPackage = new List<ClassifierPackage>(),
+                            Products = new List<Product>(),
+                            Packing = new List<Packing>(),
+                            BarcodeTable = new List<BarcodeRow>(),
+                            TableProduct = new List<ProductRow>()
+                        };
+                        var count = Math.Min(10000, data.Info.Products.Count - i);
+                        dataPart.Info.Products = data.Info.Products.GetRange(i, count);
+                        var json = JsonConvert.SerializeObject(dataPart, Formatting.Indented, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
+                        var result = RequestData.SendPost(baseUrl + "POSTInfoRestOfGoods", usernameAPI, passwordAPI, json, out string error);
+                        DataProvider.SaveErrorToSQL(null, error);
+                        DataProvider.SaveErrorToSQL(null, result.CheckOnError());
+                        i += 10000;
+                    }
+                    i = 0;
+                    while (i < data.Info.Packing.Count)
+                    {
+                        var dataPart = new InfoRestOfGoods() { WareHouseCode = wareHouseCode };
+                        dataPart.Info = new InfoInfoRestOfGoods()
+                        {
+                            GroupsProducts = new List<ProductGroup>(),
+                            ClassifierPackage = new List<ClassifierPackage>(),
+                            Products = new List<Product>(),
+                            Packing = new List<Packing>(),
+                            BarcodeTable = new List<BarcodeRow>(),
+                            TableProduct = new List<ProductRow>()
+                        };
+                        var count = Math.Min(10000, data.Info.Packing.Count - i);
+                        dataPart.Info.Packing = data.Info.Packing.GetRange(i, count);
+                        var json = JsonConvert.SerializeObject(dataPart, Formatting.Indented, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
+                        var result = RequestData.SendPost(baseUrl + "POSTInfoRestOfGoods", usernameAPI, passwordAPI, json, out string error);
+                        DataProvider.SaveErrorToSQL(null, error);
+                        DataProvider.SaveErrorToSQL(null, result.CheckOnError());
+                        i += 10000;
+                    }
+                }
             }
         }
 
@@ -107,8 +155,8 @@ namespace WMS_API
             {
                 var json = JsonConvert.SerializeObject(data, Formatting.Indented, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
                 var result = RequestData.SendPost(baseUrl + "POSTInfoRestOfGoods", usernameAPI, passwordAPI, json, out string error);
-                DataProvider.SaveErrorToSQL(error);
-                DataProvider.SaveErrorToSQL(result.CheckOnError());
+                DataProvider.SaveErrorToSQL(null, error);
+                DataProvider.SaveErrorToSQL(null, result.CheckOnError());
             }
         }
 
@@ -121,8 +169,22 @@ namespace WMS_API
             {
                 var json = JsonConvert.SerializeObject(data, Formatting.Indented, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
                 var result = RequestData.SendPost(baseUrl + "POSTInfoRestOfGoods", usernameAPI, passwordAPI, json, out string error);
-                DataProvider.SaveErrorToSQL(error);
-                DataProvider.SaveErrorToSQL(result.CheckOnError());
+                DataProvider.SaveErrorToSQL(null, error);
+                DataProvider.SaveErrorToSQL(null, result.CheckOnError());
+            }
+        }
+
+        public static void SendChangeSets()
+        {
+            var data = new InfoRestOfGoods();
+            data.WareHouseCode = wareHouseCode;
+            data.Info = DataProvider.GetChangeSets();
+            if (data.Info.GroupsProducts.Count != 0 || data.Info.ClassifierPackage.Count != 0 || data.Info.Products.Count != 0 || data.Info.Packing.Count != 0 || data.Info.BarcodeTable.Count != 0 || data.Info.TableProduct.Count != 0 || data.Info.TableSetProducts.Count != 0)
+            {
+                var json = JsonConvert.SerializeObject(data, Formatting.Indented, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
+                var result = RequestData.SendPost(baseUrl + "POSTInfoRestOfGoods", usernameAPI, passwordAPI, json, out string error);
+                DataProvider.SaveErrorToSQL(null, error);
+                DataProvider.SaveErrorToSQL(null, result.CheckOnError());
             }
         }
 
@@ -133,8 +195,22 @@ namespace WMS_API
             data.Info = DataProvider.GetOneGood(codetvun);
             var json = JsonConvert.SerializeObject(data, Formatting.Indented, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
             var result = RequestData.SendPost(baseUrl + "POSTInfoRestOfGoods", usernameAPI, passwordAPI, json, out string error);
-            DataProvider.SaveErrorToSQL(error, $"codetvun = {codetvun}");
-            DataProvider.SaveErrorToSQL(result.CheckOnError());
+            DataProvider.SaveErrorToSQL(null, error, $"codetvun = {codetvun}");
+            DataProvider.SaveErrorToSQL(null, result.CheckOnError());
+        }
+
+        public static void SendNewGood(int codetvun)
+        {
+            var data = new InfoRestOfGoods();
+            data.WareHouseCode = wareHouseCode;
+            data.Info = DataProvider.GetNewGood(codetvun);
+            if (data.Info.GroupsProducts.Count != 0 || data.Info.ClassifierPackage.Count != 0 || data.Info.Products.Count != 0 || data.Info.Packing.Count != 0 || data.Info.BarcodeTable.Count != 0 || data.Info.TableProduct.Count != 0)
+            {
+                var json = JsonConvert.SerializeObject(data, Formatting.Indented, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
+                var result = RequestData.SendPost(baseUrl + "POSTInfoRestOfGoods", usernameAPI, passwordAPI, json, out string error);
+                DataProvider.SaveErrorToSQL(null, error, $"codetvun = {codetvun}");
+                DataProvider.SaveErrorToSQL(null, result.CheckOnError());
+            }
         }
 
         public static void SendGoodGroups(int groгps)
@@ -147,8 +223,8 @@ namespace WMS_API
                 var json = JsonConvert.SerializeObject(data, Formatting.Indented, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore});
                 var result = RequestData.SendPost(baseUrl + "POSTInfoRestOfGoods", usernameAPI, passwordAPI, json, out string error);
                 SendGoodEv?.Invoke(null, new SendGoodEvEventArgs() { Count = data.Info.Products.Count });
-                DataProvider.SaveErrorToSQL(error, $"groups = {groгps}");
-                DataProvider.SaveErrorToSQL(result.CheckOnError());
+                DataProvider.SaveErrorToSQL(null, error, $"groups = {groгps}");
+                DataProvider.SaveErrorToSQL(null, result.CheckOnError());
             }
 
             //посилання товарів з підгруп рекурсивно:
@@ -168,8 +244,8 @@ namespace WMS_API
             {
                 var json = JsonConvert.SerializeObject(data, Formatting.Indented, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
                 var result = RequestData.SendPost(baseUrl + "POSTInfoRestOfGoods", usernameAPI, passwordAPI, json, out string error);
-                DataProvider.SaveErrorToSQL(error, $"place = {place}");
-                DataProvider.SaveErrorToSQL(result.CheckOnError());
+                DataProvider.SaveErrorToSQL(null, error, $"place = {place}");
+                DataProvider.SaveErrorToSQL(null, result.CheckOnError());
             }
         }
 
@@ -180,63 +256,93 @@ namespace WMS_API
             data.Info = DataProvider.GetSets();
             var json = JsonConvert.SerializeObject(data, Formatting.Indented, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
             var result = RequestData.SendPost(baseUrl + "POSTInfoRestOfGoods", usernameAPI, passwordAPI, json, out string error);
-            DataProvider.SaveErrorToSQL(error);
-            DataProvider.SaveErrorToSQL(result.CheckOnError());
+            DataProvider.SaveErrorToSQL(null, error);
+            DataProvider.SaveErrorToSQL(null, result.CheckOnError());
         }
 
         public static void GetModifications()
         {
             var result = RequestData.SendPost(baseUrl + "POSTOrdersModifications", usernameAPI, passwordAPI, "", out string error);
-            DataProvider.SaveErrorToSQL(error);
+            DataProvider.SaveErrorToSQL(null, error);
             var orsers = result.Deserialize<OrdersModifications>(out error);
-            DataProvider.SaveErrorToSQL(error);
+            DataProvider.SaveErrorToSQL(null, error);
             var nomenclature = orsers.TableDocInfo.Where(or => or.TypeOperation == OrderModificationsTypeOperation.NOMENCLATURE).ToList();
+            //doubleTrue - список істинних подвоєних елементів. Тобто якщо елемент подвоєний то сюди попав правильний(останній) елемент.
+            var doubleTrue = nomenclature
+                .OrderByDescending(or => or.RegDate)
+                .GroupBy(v => v.GUIDorder)
+                .Where(g => g.Count() > 1)
+                .Select(g => g.First())
+                .ToList();
+            //nomenclature.RemoveAll(n => (doubleTrue.Any(d => d.GUIDorder == n.GUIDorder) && !doubleTrue.Contains(n)));
             foreach(var order in nomenclature)
             {
-                result = RequestData.SendPost(baseUrl + "POSTInfoOnOrder", usernameAPI, passwordAPI, "{\"GUIDentry\": \"" + order.GUIDentry.ToString() + "\", \"GUIDorder\": \"" + order.GUIDorder + "\"}", out error);
-                DataProvider.SaveErrorToSQL(error);
-                var product = result.Deserialize<InfoOnOrder>(out error);
-                DataProvider.SaveErrorToSQL(error);
-                if (product.TypeOperation == OrderModificationsTypeOperation.NOMENCLATURE)
+                if (doubleTrue.Contains(order) || doubleTrue.All(d => d.GUIDorder != order.GUIDorder))
                 {
-                    DataProvider.AddModificationsToBD(product.Product);
-                    result = RequestData.SendPost(baseUrl + "POSTOrderResultAS", usernameAPI, passwordAPI, "{\"GUIDentry\": \"" + order.GUIDentry.ToString() + "\"}", out error);
-                    DataProvider.SaveErrorToSQL(error);
+                    result = RequestData.SendPost(baseUrl + "POSTInfoOnOrder", usernameAPI, passwordAPI, "{\"GUIDentry\": \"" + order.GUIDentry.ToString() + "\", \"GUIDorder\": \"" + order.GUIDorder + "\"}", out error);
+                    DataProvider.SaveErrorToSQL(null, error);
+                    var product = result.Deserialize<InfoOnOrder>(out error);
+                    DataProvider.SaveErrorToSQL(null, error);
+                    if (product.TypeOperation == OrderModificationsTypeOperation.NOMENCLATURE)
+                    {
+                        DataProvider.AddModificationsToBD(product.Product);
+                    }
                 }
+                result = RequestData.SendPost(baseUrl + "POSTOrderResultAS", usernameAPI, passwordAPI, "{\"GUIDentry\": \"" + order.GUIDentry.ToString() + "\"}", out error);
+                DataProvider.SaveErrorToSQL(null, error);
             }
         }
 
         public static void GetInventory()
         {
             var result = RequestData.SendPost(baseUrl + "POSTOrdersModifications", usernameAPI, passwordAPI, "", out string error);
-            DataProvider.SaveErrorToSQL(error);
+            DataProvider.SaveErrorToSQL(null, error);
             var orsers = result.Deserialize<OrdersModifications>(out error);
-            DataProvider.SaveErrorToSQL(error);
+            DataProvider.SaveErrorToSQL(null, error);
             var nomenclature = orsers.TableDocInfo.Where(or => or.TypeOperation == OrderModificationsTypeOperation.INVENTORY).ToList();
             foreach (var order in nomenclature)
             {
                 result = RequestData.SendPost(baseUrl + "POSTInfoOnOrder", usernameAPI, passwordAPI, "{\"GUIDentry\": \"" + order.GUIDentry.ToString() + "\", \"GUIDorder\": \"" + order.GUIDorder + "\"}", out error);
-                DataProvider.SaveErrorToSQL(error);
+                DataProvider.SaveErrorToSQL(null, error);
                 var product = result.Deserialize<InfoOnOrder>(out error);
-                DataProvider.SaveErrorToSQL(error);
-                if (product.TypeOperation == OrderModificationsTypeOperation.NOMENCLATURE)
+                DataProvider.SaveErrorToSQL(null, error);
+                if (product.TypeOperation == OrderModificationsTypeOperation.INVENTORY)
                 {
-                    DataProvider.AddModificationsToBD(product.Product);
+                    //DataProvider.AddModificationsToBD(product.Product);
                     result = RequestData.SendPost(baseUrl + "POSTOrderResultAS", usernameAPI, passwordAPI, "{\"GUIDentry\": \"" + order.GUIDentry.ToString() + "\"}", out error);
-                    DataProvider.SaveErrorToSQL(error);
+                    DataProvider.SaveErrorToSQL(null, error);
                 }
             }
         }
 
-        public static void SendRoute(int route)
+        public static void GetRemains()
+        {
+            var getRemains = new GetRemains()
+            {
+                WareHouseCode = wareHouseCode,
+                Free = false,
+                ShowServiceCells = true,
+                MSWarehouseCodeArray = new List<MSWarehouseCodeArray>(),
+                Date = DateTime.Now
+            };
+            var json = JsonConvert.SerializeObject(getRemains, Formatting.Indented, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
+            var result = RequestData.SendPost(baseUrl + "POSTGetRemains", usernameAPI, passwordAPI, json, out string error);
+            DataProvider.SaveErrorToSQL(null, error);
+            var remains = result.Deserialize<List<Remain>>(out error);
+            DataProvider.SaveErrorToSQL(null, error);
+            DataProvider.AddRemainsToBD(remains);
+        }
+
+        public static void SendRoute(int route, string place)
         {
             var data = new RestRouteSheet();
             data.WareHouseCode = wareHouseCode;
-            data.RouteSheet = DataProvider.GetRoute(route);
+            data.RouteSheet = DataProvider.GetRoute(route, place);
+            if (data.RouteSheet == null) return;
             var json = JsonConvert.SerializeObject(data, Formatting.Indented, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
             var result = RequestData.SendPost(baseUrl + "POSTRouteSheet", usernameAPI, passwordAPI, json, out string error);
-            DataProvider.SaveErrorToSQL(error, $"route = {route}");
-            DataProvider.SaveErrorToSQL(result.CheckOnError());
+            DataProvider.SaveErrorToSQL(null, error, $"route = {route}");
+            DataProvider.SaveErrorToSQL(null, result.CheckOnError());
         }
     }
 }

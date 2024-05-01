@@ -46,5 +46,8 @@ namespace WMS_API.ModelABM
 
         [EnumMember(Value = @"B1")]
         B1 = 1,
+
+        [EnumMember(Value = @"B2")]
+        B2 = 2,
     }
 }
