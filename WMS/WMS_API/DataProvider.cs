@@ -1526,13 +1526,13 @@ namespace WMS_API
                         result.DateOut = Convert.ToDateTime(reader["daten"]);
 
                         result.TableOrder = new List<OrderRow>() {
-                            new OrderRow(){ GUIDOrder = Convert.ToInt32(reader["codenNakl"]).ToString() }};
+                            new OrderRow(){ GUIDOrder = Convert.ToString(reader["codenNakl"]) }};
 
                         while (reader.Read())
                         {
-                            var order = new OrderRow() 
+                            var order = new OrderRow()
                             {
-                                GUIDOrder = Convert.ToInt32(reader["codenNakl"]).ToString()
+                                GUIDOrder = Convert.ToString(reader["codenNakl"])
                             };
                             result.TableOrder.Add(order);
                         }

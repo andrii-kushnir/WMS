@@ -321,7 +321,7 @@ namespace WMS_API
             {
                 WareHouseCode = wareHouseCode,
                 Free = false,
-                ShowServiceCells = true,
+                ShowServiceCells = false,
                 MSWarehouseCodeArray = new List<MSWarehouseCodeArray>(),
                 Date = DateTime.Now
             };
