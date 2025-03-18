@@ -12,6 +12,7 @@ namespace WMS_API
     {
         private const string baseUrlMain = "http://192.168.4.101/wms_arc_ceramics/hs/WMSExchange/";
         private const string baseUrlTest = "http://192.168.4.101/wms_arc_ceramics_test/hs/WMSExchange/";
+        private const string baseUrl106 = "http://192.168.4.101/wms_arc_ceramics_106/hs/WMSExchange/";
         private const string usernameAPI = "Exchange";
         private const string passwordAPI = "Exchange";
 
@@ -26,16 +27,28 @@ namespace WMS_API
             public int Count { get; set; }
         }
 
-        public static void ChangeServer(bool Main)
+        public static void ChangeServer(int Main)
         {
-            if (Main)
+            switch (Main)
             {
-                baseUrl = baseUrlMain;
+                case 0:
+                    baseUrl = baseUrlMain;
+                    break;
+                case 1:
+                    baseUrl = baseUrl106;
+                    break;
+                case 2:
+                    baseUrl = baseUrlTest;
+                    break;
             }
-            else
-            {
-                baseUrl = baseUrlTest;
-            }
+            //if (Main)
+            //{
+            //    baseUrl = baseUrlMain;
+            //}
+            //else
+            //{
+            //    baseUrl = baseUrlTest;
+            //}
         }
 
         public static void TestRequest()
@@ -217,7 +230,7 @@ namespace WMS_API
         {
             var data = new InfoRestOfGoods();
             data.WareHouseCode = wareHouseCode;
-            data.Info = DataProvider.GetGroupGood(groгps);
+            data.Info = DataProvider.GetGroupGoodGroup(groгps);
             if (data.Info.Products.Count != 0)
             {
                 var json = JsonConvert.SerializeObject(data, Formatting.Indented, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore});
@@ -235,6 +248,26 @@ namespace WMS_API
             }
         }
 
+        public static void SendBarcodeGroups(int groгps)
+        {
+            var data = new InfoRestOfGoods();
+            data.WareHouseCode = wareHouseCode;
+            data.Info = DataProvider.GetGroupBarcode(groгps);
+            if (data.Info.BarcodeTable.Count != 0)
+            {
+                var json = JsonConvert.SerializeObject(data, Formatting.Indented, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
+                var result = RequestData.SendPost(baseUrl + "POSTInfoRestOfGoods", usernameAPI, passwordAPI, json, out string error);
+                DataProvider.SaveErrorToSQL(null, error, $"barcode_groups = {groгps}");
+                DataProvider.SaveErrorToSQL(null, result.CheckOnError());
+            }
+
+            var subgroups = DataProvider.GetSubgroups(groгps);
+            foreach (var group in subgroups)
+            {
+                SendBarcodeGroups(group);
+            }
+        }
+
         public static void SendGoodPlace(int place)
         {
             var data = new InfoRestOfGoods();
@@ -245,6 +278,21 @@ namespace WMS_API
                 var json = JsonConvert.SerializeObject(data, Formatting.Indented, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
                 var result = RequestData.SendPost(baseUrl + "POSTInfoRestOfGoods", usernameAPI, passwordAPI, json, out string error);
                 DataProvider.SaveErrorToSQL(null, error, $"place = {place}");
+                DataProvider.SaveErrorToSQL(null, result.CheckOnError());
+            }
+        }
+
+        public static void SendGoodsFromSelect(string select)
+        {
+            var data = new InfoRestOfGoods();
+            data.WareHouseCode = wareHouseCode;
+#warning доробити!
+            //data.Info = DataProvider.GetGoodsFromSelect(select);
+            if (data.Info.Products.Count != 0)
+            {
+                var json = JsonConvert.SerializeObject(data, Formatting.Indented, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
+                var result = RequestData.SendPost(baseUrl + "POSTInfoRestOfGoods", usernameAPI, passwordAPI, json, out string error);
+                DataProvider.SaveErrorToSQL(null, error, $"select = {select}");
                 DataProvider.SaveErrorToSQL(null, result.CheckOnError());
             }
         }
@@ -274,14 +322,13 @@ namespace WMS_API
                 .Where(g => g.Count() > 1)
                 .Select(g => g.First())
                 .ToList();
-            //nomenclature.RemoveAll(n => (doubleTrue.Any(d => d.GUIDorder == n.GUIDorder) && !doubleTrue.Contains(n)));
             foreach(var order in nomenclature)
             {
-                if (doubleTrue.Contains(order) || doubleTrue.All(d => d.GUIDorder != order.GUIDorder))
+                if (doubleTrue.Contains(order) || doubleTrue.All(d => d.GUIDorder != order.GUIDorder)) //якщо він правильний(останній) подвоєний або не подвоєний //тобто тут відлітають подвоєні старі зміни
                 {
                     result = RequestData.SendPost(baseUrl + "POSTInfoOnOrder", usernameAPI, passwordAPI, "{\"GUIDentry\": \"" + order.GUIDentry.ToString() + "\", \"GUIDorder\": \"" + order.GUIDorder + "\"}", out error);
                     DataProvider.SaveErrorToSQL(null, error);
-                    var product = result.Deserialize<InfoOnOrder>(out error);
+                    var product = result.Deserialize<InfoOnOrderNomenclature>(out error);
                     DataProvider.SaveErrorToSQL(null, error);
                     if (product.TypeOperation == OrderModificationsTypeOperation.NOMENCLATURE)
                     {
@@ -290,6 +337,18 @@ namespace WMS_API
                 }
                 result = RequestData.SendPost(baseUrl + "POSTOrderResultAS", usernameAPI, passwordAPI, "{\"GUIDentry\": \"" + order.GUIDentry.ToString() + "\"}", out error);
                 DataProvider.SaveErrorToSQL(null, error);
+            }
+        }
+
+        public static void TestModifications()
+        {
+            var result = RequestData.SendPost(baseUrl + "POSTInfoOnOrder", usernameAPI, passwordAPI, "{\"GUIDentry\": \"bd1819d9-486c-4bef-89a3-9eb286c21c59\", \"GUIDorder\": \"1014880\"}", out string error);
+            DataProvider.SaveErrorToSQL(null, error);
+            var product = result.Deserialize<InfoOnOrderNomenclature>(out error);
+            DataProvider.SaveErrorToSQL(null, error);
+            if (product.TypeOperation == OrderModificationsTypeOperation.NOMENCLATURE)
+            {
+                DataProvider.AddModificationsToBD(product.Product);
             }
         }
 
@@ -304,7 +363,7 @@ namespace WMS_API
             {
                 result = RequestData.SendPost(baseUrl + "POSTInfoOnOrder", usernameAPI, passwordAPI, "{\"GUIDentry\": \"" + order.GUIDentry.ToString() + "\", \"GUIDorder\": \"" + order.GUIDorder + "\"}", out error);
                 DataProvider.SaveErrorToSQL(null, error);
-                var product = result.Deserialize<InfoOnOrder>(out error);
+                var product = result.Deserialize<InfoOnOrderNomenclature>(out error);
                 DataProvider.SaveErrorToSQL(null, error);
                 if (product.TypeOperation == OrderModificationsTypeOperation.INVENTORY)
                 {
@@ -313,6 +372,40 @@ namespace WMS_API
                     DataProvider.SaveErrorToSQL(null, error);
                 }
             }
+        }
+
+        public static void GetTovarDodProp()
+        {
+            //для тесту додаткових властивостей товару:
+            var order = new OrderModifications() { GUIDentry = new Guid("9dd012a4-64cc-49a3-b177-6db771ea9948"), GUIDorder = "1061965" };
+            var result = RequestData.SendPost(baseUrl + "POSTInfoOnOrder", usernameAPI, passwordAPI, "{\"GUIDentry\": \"" + order.GUIDentry.ToString() + "\", \"GUIDorder\": \"" + order.GUIDorder + "\"}", out string error);
+            DataProvider.SaveErrorToSQL(null, error);
+            var product = result.Deserialize<InfoOnOrderInvoice>(out error);
+            var tovDodProp = product.Invoice.TableProduct.Where(p => p.Part != null || p.Calibre != null || p.Tone != null || p.ShelfLife > new DateTime(2020, 01, 01) || p.DateOfManufacture > new DateTime(2020, 01, 01) || (p.Quality != "Кондиция" && p.Quality != "")).Select(t => new TovDodProp() {
+                    codetvun = Convert.ToInt32(t.GUIDProduct),
+                    coden = product.Invoice.NumberDoc,
+                    Qty = t.Qty,
+                    Quality = t.Quality,
+                    DateofMan = t.DateOfManufacture.DateToSQL(),
+                    ShelfLife = t.ShelfLife.DateToSQL(),
+                    Part = t.Part,
+                    Calibre = t.Calibre,
+                    Tone = t.Tone
+            }).ToList();
+            DataProvider.SaveErrorToSQL(null, error);
+        }
+
+        public class TovDodProp
+        {
+            public int codetvun { get; set; }
+            public string coden { get; set; }
+            public double Qty { get; set; }
+            public string Quality { get; set; }
+            public string DateofMan { get; set; }
+            public string ShelfLife { get; set; }
+            public string Part { get; set; }
+            public string Calibre { get; set; }
+            public string Tone { get; set; }
         }
 
         public static void GetRemains()
@@ -327,10 +420,29 @@ namespace WMS_API
             };
             var json = JsonConvert.SerializeObject(getRemains, Formatting.Indented, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
             var result = RequestData.SendPost(baseUrl + "POSTGetRemains", usernameAPI, passwordAPI, json, out string error);
-            DataProvider.SaveErrorToSQL(null, error);
+            DataProvider.SaveErrorToSQL(null, error, "SendPost");
             var remains = result.Deserialize<List<Remain>>(out error);
-            DataProvider.SaveErrorToSQL(null, error);
+            DataProvider.SaveErrorToSQL(null, error, "Deserialize");
             DataProvider.AddRemainsToBD(remains);
+        }
+
+        public static void GetRemainsDodProp()
+        {
+            var getRemains = new GetRemains()
+            {
+                WareHouseCode = wareHouseCode,
+                Free = true,
+                ShowServiceCells = false,
+                MSWarehouseCodeArray = new List<MSWarehouseCodeArray>(),
+                Date = DateTime.Now
+            };
+            var json = JsonConvert.SerializeObject(getRemains, Formatting.Indented, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
+            var result = RequestData.SendPost(baseUrl + "POSTGetRemains", usernameAPI, passwordAPI, json, out string error);
+            DataProvider.SaveErrorToSQL(null, error, "SendPost");
+            var remains = result.Deserialize<List<Remain>>(out error);
+            //var remainsDodProp = remains.Where(r => !(r.Tone == null && r.Part == null && r.Calibre == null)).ToList();
+            DataProvider.SaveErrorToSQL(null, error, "Deserialize");
+            DataProvider.AddRemainsDodPropToBD(remains);
         }
 
         public static void SendRoute(int route, string place)
@@ -343,6 +455,20 @@ namespace WMS_API
             var result = RequestData.SendPost(baseUrl + "POSTRouteSheet", usernameAPI, passwordAPI, json, out string error);
             DataProvider.SaveErrorToSQL(null, error, $"route = {route}");
             DataProvider.SaveErrorToSQL(null, result.CheckOnError());
+        }
+
+        public static void SendGoodOnSelect(string query)
+        {
+            var data = new InfoRestOfGoods();
+            data.WareHouseCode = wareHouseCode;
+            data.Info = DataProvider.GetGoodOnSelect(query);
+            if (data.Info.Products.Count != 0)
+            {
+                var json = JsonConvert.SerializeObject(data, Formatting.Indented, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
+                var result = RequestData.SendPost(baseUrl + "POSTInfoRestOfGoods", usernameAPI, passwordAPI, json, out string error);
+                DataProvider.SaveErrorToSQL(null, error);
+                DataProvider.SaveErrorToSQL(null, result.CheckOnError());
+            }
         }
     }
 }

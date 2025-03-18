@@ -51,6 +51,15 @@ namespace WMS_UI
             }
         }
 
+        private void _bSendBarcode_Click(object sender, EventArgs e)
+        {
+            var nkey = Convert.ToInt32(_tbNkeyBarcode.Text);
+            countGoods = 0;
+            allGoods = DataProvider.CountTovarGroup(nkey);
+            if (MessageBox.Show($"Всього {allGoods} товарів. Продовжити?", "", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                MethodsAPI.SendBarcodeGroups(nkey);
+        }
+
         private void _bSendSets_Click(object sender, EventArgs e)
         {
             MethodsAPI.SendSets();
@@ -66,14 +75,15 @@ namespace WMS_UI
 
         private void _cbServer_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (_cbServer.SelectedIndex == 0)
-            {
-                MethodsAPI.ChangeServer(true);
-            }
-            else
-            {
-                MethodsAPI.ChangeServer(false);
-            }
+            MethodsAPI.ChangeServer(_cbServer.SelectedIndex);
+            //if (_cbServer.SelectedIndex == 0)
+            //{
+            //    MethodsAPI.ChangeServer(true);
+            //}
+            //else
+            //{
+            //    MethodsAPI.ChangeServer(false);
+            //}
         }
 
         private void _bSendGoodsPlace_Click(object sender, EventArgs e)
@@ -95,8 +105,18 @@ namespace WMS_UI
 
         private void button1_Click(object sender, EventArgs e)
         {
-            MethodsAPI.SendChangeShufr();
-            //DataProvider.SaveErrorToSQL("Це тест");
+            MethodsAPI.GetTovarDodProp();
+            ////DataProvider.SaveErrorToSQL("Це тест");
+        }
+
+        private void _bOnSelect_Click(object sender, EventArgs e)
+        {
+            //AND(ov = 'кг' OR ov = 'пог.м' OR ov = 'м2')
+            var query = $"SELECT codetvun FROM [192.168.4.4].[Sk1].[dbo].[Tovar] WHERE codetvun > 989000";
+            if (MessageBox.Show($"Залити товари з запиту: \n {query}", "", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            {
+                MethodsAPI.SendGoodOnSelect(query);
+            }
         }
     }
 }

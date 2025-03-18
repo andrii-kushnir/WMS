@@ -49,6 +49,11 @@ namespace WMS_UI
             this._bSendRoute = new System.Windows.Forms.Button();
             this.label4 = new System.Windows.Forms.Label();
             this._tbRoute = new System.Windows.Forms.TextBox();
+            this._bOnSelect = new System.Windows.Forms.Button();
+            this.label6 = new System.Windows.Forms.Label();
+            this.label7 = new System.Windows.Forms.Label();
+            this._tbNkeyBarcode = new System.Windows.Forms.TextBox();
+            this._bSendBarcode = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // _bSendClassifier
@@ -139,7 +144,7 @@ namespace WMS_UI
             // _bSendSets
             // 
             this._bSendSets.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this._bSendSets.Location = new System.Drawing.Point(12, 369);
+            this._bSendSets.Location = new System.Drawing.Point(12, 435);
             this._bSendSets.Name = "_bSendSets";
             this._bSendSets.Size = new System.Drawing.Size(421, 60);
             this._bSendSets.TabIndex = 9;
@@ -149,7 +154,7 @@ namespace WMS_UI
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(225, 593);
+            this.button1.Location = new System.Drawing.Point(225, 659);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(330, 51);
             this.button1.TabIndex = 10;
@@ -171,6 +176,7 @@ namespace WMS_UI
             this._cbServer.FormattingEnabled = true;
             this._cbServer.Items.AddRange(new object[] {
             "Головний",
+            "Кам\'янець",
             "Тестовий"});
             this._cbServer.Location = new System.Drawing.Point(159, 12);
             this._cbServer.Name = "_cbServer";
@@ -181,7 +187,7 @@ namespace WMS_UI
             // _bSendGoodsPlace
             // 
             this._bSendGoodsPlace.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this._bSendGoodsPlace.Location = new System.Drawing.Point(12, 303);
+            this._bSendGoodsPlace.Location = new System.Drawing.Point(12, 369);
             this._bSendGoodsPlace.Name = "_bSendGoodsPlace";
             this._bSendGoodsPlace.Size = new System.Drawing.Size(421, 60);
             this._bSendGoodsPlace.TabIndex = 13;
@@ -192,7 +198,7 @@ namespace WMS_UI
             // _lCountGoods2
             // 
             this._lCountGoods2.AutoSize = true;
-            this._lCountGoods2.Location = new System.Drawing.Point(592, 332);
+            this._lCountGoods2.Location = new System.Drawing.Point(592, 398);
             this._lCountGoods2.Name = "_lCountGoods2";
             this._lCountGoods2.Size = new System.Drawing.Size(121, 13);
             this._lCountGoods2.TabIndex = 16;
@@ -201,7 +207,7 @@ namespace WMS_UI
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(472, 309);
+            this.label5.Location = new System.Drawing.Point(472, 375);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(58, 13);
             this.label5.TabIndex = 15;
@@ -209,7 +215,7 @@ namespace WMS_UI
             // 
             // _tbPlace
             // 
-            this._tbPlace.Location = new System.Drawing.Point(439, 325);
+            this._tbPlace.Location = new System.Drawing.Point(439, 391);
             this._tbPlace.Name = "_tbPlace";
             this._tbPlace.Size = new System.Drawing.Size(128, 20);
             this._tbPlace.TabIndex = 14;
@@ -217,7 +223,7 @@ namespace WMS_UI
             // _bSendRoute
             // 
             this._bSendRoute.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this._bSendRoute.Location = new System.Drawing.Point(12, 435);
+            this._bSendRoute.Location = new System.Drawing.Point(12, 501);
             this._bSendRoute.Name = "_bSendRoute";
             this._bSendRoute.Size = new System.Drawing.Size(421, 60);
             this._bSendRoute.TabIndex = 17;
@@ -228,7 +234,7 @@ namespace WMS_UI
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(475, 441);
+            this.label4.Location = new System.Drawing.Point(475, 507);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(40, 13);
             this.label4.TabIndex = 19;
@@ -236,16 +242,68 @@ namespace WMS_UI
             // 
             // _tbRoute
             // 
-            this._tbRoute.Location = new System.Drawing.Point(439, 457);
+            this._tbRoute.Location = new System.Drawing.Point(439, 523);
             this._tbRoute.Name = "_tbRoute";
             this._tbRoute.Size = new System.Drawing.Size(128, 20);
             this._tbRoute.TabIndex = 18;
+            // 
+            // _bOnSelect
+            // 
+            this._bOnSelect.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this._bOnSelect.Location = new System.Drawing.Point(12, 567);
+            this._bOnSelect.Name = "_bOnSelect";
+            this._bOnSelect.Size = new System.Drawing.Size(421, 60);
+            this._bOnSelect.TabIndex = 20;
+            this._bOnSelect.Text = "Завантажити товари по Select";
+            this._bOnSelect.UseVisualStyleBackColor = true;
+            this._bOnSelect.Click += new System.EventHandler(this._bOnSelect_Click);
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(592, 332);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(121, 13);
+            this.label6.TabIndex = 24;
+            this.label6.Text = "Процес завантаження";
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(472, 309);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(65, 13);
+            this.label7.TabIndex = 23;
+            this.label7.Text = "nkey Групи:";
+            // 
+            // _tbNkeyBarcode
+            // 
+            this._tbNkeyBarcode.Location = new System.Drawing.Point(439, 325);
+            this._tbNkeyBarcode.Name = "_tbNkeyBarcode";
+            this._tbNkeyBarcode.Size = new System.Drawing.Size(128, 20);
+            this._tbNkeyBarcode.TabIndex = 22;
+            // 
+            // _bSendBarcode
+            // 
+            this._bSendBarcode.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this._bSendBarcode.Location = new System.Drawing.Point(12, 303);
+            this._bSendBarcode.Name = "_bSendBarcode";
+            this._bSendBarcode.Size = new System.Drawing.Size(421, 60);
+            this._bSendBarcode.TabIndex = 21;
+            this._bSendBarcode.Text = "Завантажити штрихкоди";
+            this._bSendBarcode.UseVisualStyleBackColor = true;
+            this._bSendBarcode.Click += new System.EventHandler(this._bSendBarcode_Click);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 656);
+            this.ClientSize = new System.Drawing.Size(800, 718);
+            this.Controls.Add(this.label6);
+            this.Controls.Add(this.label7);
+            this.Controls.Add(this._tbNkeyBarcode);
+            this.Controls.Add(this._bSendBarcode);
+            this.Controls.Add(this._bOnSelect);
             this.Controls.Add(this.label4);
             this.Controls.Add(this._tbRoute);
             this.Controls.Add(this._bSendRoute);
@@ -295,6 +353,11 @@ namespace WMS_UI
         private System.Windows.Forms.Button _bSendRoute;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.TextBox _tbRoute;
+        private System.Windows.Forms.Button _bOnSelect;
+        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.TextBox _tbNkeyBarcode;
+        private System.Windows.Forms.Button _bSendBarcode;
     }
 }
 

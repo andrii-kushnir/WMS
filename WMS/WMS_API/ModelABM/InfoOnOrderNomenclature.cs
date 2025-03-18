@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace WMS_API.ModelABM
 {
-    public class InfoOnOrder
+    public class InfoOnOrderNomenclature
     {
         [JsonConverter(typeof(StringEnumConverter))]
         public OrderModificationsTypeOperation TypeOperation { get; set; }

@@ -26,6 +26,23 @@ namespace WMS_API
             {
                 response = (HttpWebResponse)request.GetResponse();
             }
+            catch (WebException ex)
+            {
+                if (ex.Response != null)
+                {
+                    using (HttpWebResponse errorResponse = (HttpWebResponse)ex.Response)
+                    {
+                        var errorResult = ParseResponse(errorResponse, out error);
+                        error = errorResult.CheckOnError();
+                        return null;
+                    }
+                }
+                else
+                {
+                    error = ex.Message;
+                    return null;
+                }
+            }
             catch (Exception ex)
             {
                 error = ex.Message;

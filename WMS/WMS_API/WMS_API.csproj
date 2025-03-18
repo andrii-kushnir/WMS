@@ -50,13 +50,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DataProvider.cs" />
+    <Compile Include="DodPropTest.cs" />
     <Compile Include="ExtensionSQL.cs" />
     <Compile Include="MethodsAPI.cs" />
     <Compile Include="ModelABM\BarcodeRow.cs" />
     <Compile Include="ModelABM\ClassifierPackage.cs" />
     <Compile Include="ModelABM\GetRemains.cs" />
-    <Compile Include="ModelABM\InfoOnOrder.cs" />
+    <Compile Include="ModelABM\InfoOnOrderNomenclature.cs" />
     <Compile Include="ModelABM\InfoRestOfGoods.cs" />
+    <Compile Include="ModelABM\Invoice.cs" />
     <Compile Include="ModelABM\OrdersModifications.cs" />
     <Compile Include="ModelABM\Packing.cs" />
     <Compile Include="ModelABM\Remain.cs" />

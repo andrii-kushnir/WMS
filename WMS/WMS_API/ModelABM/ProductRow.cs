@@ -46,10 +46,19 @@ namespace WMS_API.ModelABM
         /// </summary>
         public DateTime DateOfManufacture { get; set; }
 
-        ///// <summary>
-        ///// Значение дополнительного свойства партии. Ключом (тут: BP001) выступает идентификатор дополнительного свойства партии в учетной системе. Типы значений: строка, число, UUID, дата в формате ISO, булево. Может быть несколько.
-        ///// <br/>
-        ///// </summary>
-        //public string BP001 { get; set; }
+        /// <summary>
+        /// Партія
+        /// </summary>
+        public string Part { get; set; }
+
+        /// <summary>
+        /// Калібр
+        /// </summary>
+        public string Calibre { get; set; }
+
+        /// <summary>
+        /// Тон
+        /// </summary>
+        public string Tone { get; set; }
     }
 }

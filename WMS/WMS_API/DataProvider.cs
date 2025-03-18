@@ -415,6 +415,7 @@ namespace WMS_API
 
         public static InfoInfoRestOfGoods GetGroupGood(int group)
         {
+            //Заливає потоварно
             var result = new InfoInfoRestOfGoods()
             {
                 GroupsProducts = new List<ProductGroup>(),
@@ -462,6 +463,210 @@ namespace WMS_API
             return result;
         }
 
+        public static InfoInfoRestOfGoods GetGroupGoodGroup(int group)
+        {
+            //Заливає групами
+            var result = new InfoInfoRestOfGoods()
+            {
+                GroupsProducts = new List<ProductGroup>(),
+                ClassifierPackage = new List<ClassifierPackage>(),
+                Products = new List<Product>(),
+                Packing = new List<Packing>(),
+                BarcodeTable = new List<BarcodeRow>(),
+                TableProduct = new List<ProductRow>()
+            };
+            using (var connection = new SqlConnection(connectionSql101))
+            {
+                var query = $"EXECUTE [us_GetGoodsFromGroup] {group}";
+                var command = new SqlCommand(query, connection);
+                connection.Open();
+                SqlDataReader reader = null;
+                try
+                {
+                    reader = command.ExecuteReader();
+                    if (reader.HasRows)
+                    {
+                        while (reader.Read())
+                        {
+                            string packingForBarcode = null;
+                            var codetvun = Convert.ToInt32(reader["codetvun"]);
+                            var codetv = Convert.ToInt32(reader["codetv"]);
+                            var description = new string(Convert.ToString(reader["nametv"]).Where(c => !char.IsControl(c)).ToArray());
+                            var product = new Product()
+                            {
+                                GUIDProduct = codetvun.ToString(),
+                                CodeMS = codetvun.ToString(),
+                                Description = description,
+                                FullDescription = "",
+                                AdditionalDescription = "",
+                                ParentGUID = Convert.ToInt32(reader["nParent"]).ToString(),
+                                Article = codetv.ToString(),
+                                Type = (ProductType)Convert.ToInt32(reader["typeOv"]),
+                                QuantityOnPallet = reader["npallet"] == System.DBNull.Value ? 0 : Convert.ToInt32(reader["npallet"]),
+                                ShelfLifeMode = reader["ShelfLifeMode"] == System.DBNull.Value ? false : (Convert.ToInt32(reader["ShelfLifeMode"]) == 0 ? false : true),
+                                StoragePeriodInDays = reader["StoragePeriodInDays"] == System.DBNull.Value ? "0" : Convert.ToInt32(reader["StoragePeriodInDays"]).ToString(),
+                                //AllowableReceiptPercentageShelfLife = reader["AllowableReceiptPercentageShelfLife"] == System.DBNull.Value ? 0 : Convert.ToSingle(reader["AllowableReceiptPercentageShelfLife"]),
+                                Part = reader["Part"] == System.DBNull.Value ? false : (Convert.ToInt32(reader["Part"]) == 0 ? false : true),
+                                Calibre = reader["Calibre"] == System.DBNull.Value ? false : (Convert.ToInt32(reader["Calibre"]) == 0 ? false : true),
+                                Tone = reader["Tone"] == System.DBNull.Value ? false : (Convert.ToInt32(reader["Tone"]) == 0 ? false : true),
+                                IsSet = Convert.ToInt32(reader["isSet"]) == 0 ? false : true
+                            };
+                            result.Products.Add(product);
+
+                            int codepl = Convert.ToInt32(reader["codepl"]);
+                            switch (codepl)
+                            {
+                                case 0:
+                                case 2:
+                                case 15:
+                                case 16:
+                                case 17:
+                                case 18:
+                                case 19:
+                                    product.Kind = "";
+                                    break;
+                                default:
+                                    product.Kind = codepl.ToString();
+                                    break;
+                            }
+
+                            var ovId = Convert.ToInt32(reader["ovid"]);
+                            var pakingGuid = ExtensionSQL.PackingCode(codetvun, ovId);
+                            product.GUIDPackaging = pakingGuid;
+                            product.MinShipGUIDPackaging = pakingGuid;
+                            packingForBarcode = pakingGuid;
+
+                            var packing = new Packing()
+                            {
+                                GUIDPackaging = pakingGuid,
+                                Description = Convert.ToString(reader["ovname"]),
+                                GUIDProduct = product.GUIDProduct,
+                                GUIDClassifierPackage = ovId.ToString("000"),
+                                Coef = 1,
+                                Height = Convert.ToSingle(reader["height"]),
+                                Width = Convert.ToSingle(reader["width"]),
+                                Depth = Convert.ToSingle(reader["tovlength"]),
+                                Weight = Convert.ToSingle(reader["vaga"]),
+                                Capacity = Convert.ToSingle(reader["volume"]),
+                                Basic = true
+                            };
+                            result.Packing.Add(packing);
+
+                            if (reader["pvu"] != System.DBNull.Value && reader["kvu"] != System.DBNull.Value)
+                            {
+                                var pvu = Convert.ToSingle(reader["pvu"]);
+                                var kvu = Convert.ToInt32(reader["kvu"]);
+
+                                var packings = FasovkaExpansion(packing, ovId, pvu, kvu, ref packingForBarcode, product);
+                                result.Packing.AddRange(packings);
+                            }
+
+                            product.ABCClassifier = ProductABCClassifier.C;
+                            if (reader["kolABC"] != System.DBNull.Value)
+                            {
+                                switch (Convert.ToString(reader["kolABC"]))
+                                {
+                                    case "A":
+                                        product.ABCClassifier = ProductABCClassifier.A;
+                                        break;
+                                    case "B":
+                                        product.ABCClassifier = ProductABCClassifier.B;
+                                        break;
+                                    default:
+                                        product.ABCClassifier = ProductABCClassifier.C;
+                                        break;
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    SaveErrorToSQL(connection, ex.Message);
+                }
+                finally
+                {
+                    reader?.Close();
+                }
+            }
+            return result;
+        }
+
+        public static InfoInfoRestOfGoods GetGroupBarcode(int group)
+        {
+            var result = new InfoInfoRestOfGoods()
+            {
+                GroupsProducts = new List<ProductGroup>(),
+                ClassifierPackage = new List<ClassifierPackage>(),
+                Products = new List<Product>(),
+                Packing = new List<Packing>(),
+                BarcodeTable = new List<BarcodeRow>(),
+                TableProduct = new List<ProductRow>()
+            };
+            using (var connection = new SqlConnection(connectionSql101))
+            {
+                var query = $"EXECUTE [us_GetBarcodeFromGroup] {group}";
+                var command = new SqlCommand(query, connection);
+                connection.Open();
+                SqlDataReader reader = null;
+                try
+                {
+                    reader = command.ExecuteReader();
+                    if (reader.HasRows)
+                    {
+                        while (reader.Read())
+                        {
+                            string packingForBarcode = null;
+                            var codetvun = Convert.ToInt32(reader["codetvun"]);
+                            var ovId = Convert.ToInt32(reader["ovid"]);
+                            var pakingGuid = ExtensionSQL.PackingCode(codetvun, ovId);
+                            packingForBarcode = pakingGuid;
+
+                            var packing = new Packing()
+                            {
+                                GUIDPackaging = pakingGuid,
+                                GUIDProduct = codetvun.ToString(),
+                                Height = 0,
+                                Width = 0,
+                                Depth = 0,
+                                Weight = 0,
+                                Capacity = 0
+                            };
+
+                            if (reader["pvu"] != System.DBNull.Value && reader["kvu"] != System.DBNull.Value)
+                            {
+                                var pvu = Convert.ToSingle(reader["pvu"]);
+                                var kvu = Convert.ToInt32(reader["kvu"]);
+                                var packings = FasovkaExpansion(packing, ovId, pvu, kvu, ref packingForBarcode);
+                            }
+
+                            var scancode = Convert.ToString(reader["scancode"]);
+                            if (!String.IsNullOrEmpty(scancode))
+                            {
+                                var barcode = new BarcodeRow()
+                                {
+                                    Barcode = scancode,
+                                    GUIDPackaging = packingForBarcode,
+                                    GUIDProduct = codetvun.ToString(),
+                                    BarcodeType = BarcodeType.B0
+                                };
+                                result.BarcodeTable.Add(barcode);
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    SaveErrorToSQL(connection, ex.Message);
+                }
+                finally
+                {
+                    reader?.Close();
+                }
+            }
+            return result;
+        }
+
         public static InfoInfoRestOfGoods GetGoodsPlace(int place)
         {
             var result = new InfoInfoRestOfGoods()
@@ -476,7 +681,6 @@ namespace WMS_API
             var listTovar = new List<int>();
             using (var connection = new SqlConnection(connectionSql101))
             {
-                //AND(ov = 'кг' OR ov = 'пог.м' OR ov = 'м2')
                 var query = $"SELECT codetvun FROM [192.168.4.4].[Sk1].[dbo].[Tovar] WHERE codepl = {place}";
                 var command = new SqlCommand(query, connection);
                 connection.Open();
@@ -897,6 +1101,15 @@ namespace WMS_API
                             Basic = true
                         };
                         result.Packing.Add(packing);
+
+                        var barcodeARC = new BarcodeRow()
+                        {
+                            Barcode = "ARC" + codetv.ToString(),
+                            GUIDPackaging = pakingGuid,
+                            GUIDProduct = codetvun.ToString(),
+                            BarcodeType = BarcodeType.B0
+                        };
+                        result.BarcodeTable.Add(barcodeARC);
                     }
                     else
                     {
@@ -1187,6 +1400,7 @@ namespace WMS_API
             using (var connection = new SqlConnection(connectionSql101))
             {
                 var query = $"EXECUTE [us_GetChangeShufr]";
+                //var query = $"SELECT T.codetvun, T.codetv, S.scancode, C.id AS ovid, F.pvu AS pvu, F.kvu AS kvu FROM[192.168.4.4].[Tovar].[dbo].[Tovar] T LEFT JOIN[192.168.4.4].[Tovar].[dbo].[TFasovka] F ON F.codetvun = T.codetvun, [192.168.4.4].[Tovar].[dbo].[Tovar_Shufr] S, ClassifierPackage C, [192.168.4.4].[Sk1].[dbo].[TGrups] G WHERE S.codetvun = T.codetvun AND T.ov = C.ov AND T.nParent = G.nkey AND G.ttype = 2 AND T.codetvun > 989000";
                 var command = new SqlCommand(query, connection);
                 connection.Open();
                 SqlDataReader reader = null;
@@ -1446,15 +1660,23 @@ namespace WMS_API
                     using (var query = new SqlCommand(sql, connection))
                         query.ExecuteNonQuery();
 
-                    foreach (var barcode in product.BarcodeTable)
+                    if (product.BarcodeTable.Count == 0 || product.BarcodeTable.All(b => b.Barcode.IndexOf("ARC") == 0))
                     {
-                        if (barcode.Barcode.IndexOf("ARC") != 0 && barcode.Barcode.Length <= 20)
-                        {
-                            sql = $"INSERT INTO TmpModificationsShufr (codetvun, scancode) VALUES ({product.GUIDProduct}, '{barcode.Barcode}')";
-                            using (var query = new SqlCommand(sql, connection))
-                                query.ExecuteNonQuery();
-                        }
+                        sql = $"INSERT INTO TmpModificationsShufr (codetvun, scancode) VALUES ({product.GUIDProduct}, 'absent')";
+                        using (var query = new SqlCommand(sql, connection))
+                            query.ExecuteNonQuery();
+
                     }
+                    else
+                        foreach (var barcode in product.BarcodeTable)
+                        {
+                            if (barcode.Barcode.IndexOf("ARC") != 0 && barcode.Barcode.Length <= 20)
+                            {
+                                sql = $"INSERT INTO TmpModificationsShufr (codetvun, scancode) VALUES ({product.GUIDProduct}, '{barcode.Barcode}')";
+                                using (var query = new SqlCommand(sql, connection))
+                                    query.ExecuteNonQuery();
+                            }
+                        }
                 }
                 catch (Exception ex)
                 {
@@ -1492,6 +1714,63 @@ namespace WMS_API
                         command.Parameters["@codetvun"].Value = remain.Codetvun;
                         command.Parameters["@QtyСondition"].Value = remain.QtyСondition;
                         command.Parameters["@QtyDefect"].Value = remain.QtyDefect;
+                        command.ExecuteNonQuery();
+                    }
+
+                    transaction.Commit();
+                }
+                connection.Close();
+            }
+            Thread.CurrentThread.CurrentCulture = culture;
+        }
+
+        public static void AddRemainsDodPropToBD(List<Remain> remains)
+        {
+            var culture = Thread.CurrentThread.CurrentCulture;
+            Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("en-US");
+
+            var remainsAll = remains
+                    .GroupBy(r => new { r.GUIDProduct, r.Quality, r.Calibre, r.Part, r.Tone, r.ShelfLife, r.DateOfManufacture })
+                    .Select(g => new
+                    {
+                        GUIDProduct = g.Key.GUIDProduct,
+                        Quality = g.Key.Quality,
+                        Calibre = g.Key.Calibre,
+                        Part = g.Key.Part,
+                        Tone = g.Key.Tone,
+                        ShelfLife = g.Key.ShelfLife,
+                        DateOfManufacture = g.Key.DateOfManufacture,
+                        Qty = g.Sum(p => p.Qty)
+                    })
+                    .ToList();
+
+            using (var connection = new SqlConnection(connectionSql101))
+            {
+                connection.Open();
+                using (var transaction = connection.BeginTransaction())
+                {
+                    var command = connection.CreateCommand();
+                    command.Transaction = transaction;
+                    command.CommandText = "INSERT INTO RemainsDodProp (codetvun, Qty, Quality, Calibre, Part, Tone, ShelfLife, Manufact) VALUES (@codetvun, @Qty, @Quality, @Calibre, @Part, @Tone, @ShelfLife, @Manufact)";
+                    command.Parameters.Add("@codetvun", System.Data.SqlDbType.Int);
+                    command.Parameters.Add("@Qty", System.Data.SqlDbType.Decimal);
+                    command.Parameters.Add("@Quality", System.Data.SqlDbType.NVarChar);
+                    command.Parameters.Add("@Calibre", System.Data.SqlDbType.NVarChar);
+                    command.Parameters.Add("@Part", System.Data.SqlDbType.NVarChar);
+                    command.Parameters.Add("@Tone", System.Data.SqlDbType.NVarChar);
+                    command.Parameters.Add("@ShelfLife", System.Data.SqlDbType.DateTime);
+                    command.Parameters.Add("@Manufact", System.Data.SqlDbType.DateTime);
+
+                    foreach (var remain in remainsAll)
+                    {
+                        command.Parameters["@codetvun"].Value = Convert.ToInt32(remain.GUIDProduct);
+                        command.Parameters["@Qty"].Value = remain.Qty;
+                        command.Parameters["@Quality"].Value = remain.Quality ?? "Кондиция";
+                        command.Parameters["@Calibre"].Value = remain.Calibre ?? "";
+                        command.Parameters["@Part"].Value = remain.Part ?? "";
+                        command.Parameters["@Tone"].Value = remain.Tone ?? "";
+                        command.Parameters["@ShelfLife"].Value = remain.ShelfLife < new DateTime(1970, 1, 1) ? (object)DBNull.Value : (object)remain.ShelfLife;
+                        command.Parameters["@Manufact"].Value = remain.DateOfManufacture < new DateTime(1970, 1, 1) ? (object)DBNull.Value : (object)remain.DateOfManufacture;
                         command.ExecuteNonQuery();
                     }
 
@@ -1578,6 +1857,54 @@ namespace WMS_API
                 var reader = command.ExecuteScalar();
                 return (int)reader;
             }
+        }
+
+        public static InfoInfoRestOfGoods GetGoodOnSelect(string select)
+        {
+            var result = new InfoInfoRestOfGoods()
+            {
+                GroupsProducts = new List<ProductGroup>(),
+                ClassifierPackage = new List<ClassifierPackage>(),
+                Products = new List<Product>(),
+                Packing = new List<Packing>(),
+                BarcodeTable = new List<BarcodeRow>(),
+                TableProduct = new List<ProductRow>()
+            };
+            var listTovar = new List<int>();
+            using (var connection = new SqlConnection(connectionSql101))
+            {
+                var command = new SqlCommand(select, connection);
+                connection.Open();
+                SqlDataReader reader = null;
+                try
+                {
+                    reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        var code = Convert.ToInt32(reader["codetvun"]);
+                        listTovar.Add(code);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    SaveErrorToSQL(connection, ex.Message);
+                }
+                finally
+                {
+                    reader?.Close();
+                }
+            }
+            foreach (var codetvun in listTovar)
+            {
+                var tovar = GetOneGood(codetvun);
+                result.GroupsProducts.AddRange(tovar.GroupsProducts);
+                result.ClassifierPackage.AddRange(tovar.ClassifierPackage);
+                result.Products.AddRange(tovar.Products);
+                result.Packing.AddRange(tovar.Packing);
+                result.BarcodeTable.AddRange(tovar.BarcodeTable);
+                result.TableProduct.AddRange(tovar.TableProduct);
+            }
+            return result;
         }
     }
 }

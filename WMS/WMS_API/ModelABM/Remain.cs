@@ -77,20 +77,17 @@ namespace WMS_API.ModelABM
         /// <summary>
         /// Партія
         /// </summary>
-        [JsonConverter(typeof(MyBooleanConverter))]
-        public bool Part { get; set; }
+        public string Part { get; set; }
 
         /// <summary>
         /// Калібр
         /// </summary>
-        [JsonConverter(typeof(MyBooleanConverter))]
-        public bool Calibre { get; set; }
+        public string Calibre { get; set; }
 
         /// <summary>
         /// Тон
         /// </summary>
-        [JsonConverter(typeof(MyBooleanConverter))]
-        public bool Tone { get; set; }
+        public string Tone { get; set; }
     }
 
     public class MyBooleanConverter : JsonConverter
